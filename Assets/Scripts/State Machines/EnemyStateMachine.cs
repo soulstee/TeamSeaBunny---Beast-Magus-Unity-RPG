@@ -20,180 +20,201 @@ public class EnemyStateMachine : MonoBehaviour
 
     public TurnState currentState;
 
-    //for the ProgressBar
+    // For the ProgressBar
     private float cur_coolddown = 0f;
     private float max_cooldown = 10f;
 
-    //thisgameobject
-    private Vector3 startposition;
-    //timeforaction stuff
+    // Position and movement
+    private Vector3 startPosition;
     private bool actionStarted = false;
     public GameObject HeroToAttack;
     public float animSpeed;
 
-    //alive
+    // Status
     private bool alive = true;
 
-    // Start is called before the first frame update
     void Start()
     {
         Selector.SetActive(false);
         currentState = TurnState.PROCESSING;
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
-        startposition = transform.position;
+        startPosition = transform.position;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        Debug.Log (currentState);
-        switch(currentState)
+        switch (currentState)
         {
-            case (TurnState.PROCESSING):
-                UpgradeProgressBar();
-            break;
+            case TurnState.PROCESSING:
+                UpdateProgressBar();
+                break;
 
-            case (TurnState.CHOOSEACTION):
-                ChooseAction ();
+            case TurnState.CHOOSEACTION:
+                ChooseAction();
                 currentState = TurnState.WAITING;
-            break;
+                break;
 
-            case (TurnState.WAITING):
-                //idle state
-            break;
+            case TurnState.WAITING:
+                // Idle state
+                break;
 
-            case(TurnState.ACTION):
-            StartCoroutine (TimeForAction ());
-            break;
+            case TurnState.ACTION:
+                StartCoroutine(TimeForAction());
+                break;
 
-            case(TurnState.DEAD):
-                if(!alive)
-                {
-                    return;
-                }
-                else
-                {
-                    //chnage tag of enemies
-                    this.gameObject.tag = "DeadEnemy";
-                    //not atackable by heroes anymore
-                    BSM.EnemiesInBattle.Remove(this.gameObject);
-                    //disable Selector
-                    Selector.SetActive(false);
-                    //remove all inputs heroattacks
-                    if(BSM.EnemiesInBattle.Count > 0)
-                    {
-                        for (int i = 0; i < BSM.PerformList.Count; i++)
-                        {
-                            if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
-                            {
-                                BSM.PerformList.Remove(BSM.PerformList[i]);
-                            }
-                            else if (BSM.PerformList[i].AttackersTarget == this.gameObject)
-                            {
-                                BSM.PerformList[i].AttackersTarget = BSM.EnemiesInBattle[Random.Range(0, BSM.EnemiesInBattle.Count)]; 
-                            }
-                        }
-                    } 
-                    //change the color to gray / play dead animation
-                    this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105,105,105,255);
-                    //set alive false
-                    alive = false;
-                    //reset enemybuttons
-                    BSM.EnemyButtons();
-                    //check alive
-                    BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
-                }
-            break;
+            case TurnState.DEAD:
+                HandleDeath();
+                break;
         }
     }
 
-    void UpgradeProgressBar()
+    private void UpdateProgressBar()
     {
-        cur_coolddown = cur_coolddown + Time.deltaTime;
-        if(cur_coolddown >= max_cooldown)
+        cur_coolddown += Time.deltaTime;
+        if (cur_coolddown >= max_cooldown)
         {
             currentState = TurnState.CHOOSEACTION;
         }
     }
 
-    void ChooseAction()
+    private void ChooseAction()
     {
-        HandleTurn myAttack = new HandleTurn ();
-        myAttack.Attacker = enemy.characterName;
-        myAttack.Type = "Enemy";
-        myAttack.AttackersGameObject = this.gameObject;
-        myAttack.AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)];
+        if (BSM.HeroesInGame.Count == 0)
+        {
+            Debug.LogWarning("No heroes left to target.");
+            return;
+        }
 
-        int num = Random.Range(0, enemy.attacks.Count);
-        myAttack.chosenAttack = enemy.attacks[num];
-        Debug.Log (this.gameObject.name + " does " + myAttack.chosenAttack.attackName + ", dealing " + myAttack.chosenAttack.attackDamage + " damage!");
-        BSM.CollectActions (myAttack);
+        // Create a new action
+        HandleTurn enemyAttack = new HandleTurn
+        {
+            Attacker = enemy.characterName,
+            Type = "Enemy",
+            AttackersGameObject = this.gameObject,
+            AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)], // Random hero target
+            chosenAttack = enemy.attacks[Random.Range(0, enemy.attacks.Count)] // Random attack
+        };
+
+        Debug.Log($"{enemy.characterName} attacks {enemyAttack.AttackersTarget.name} with {enemyAttack.chosenAttack.attackName}");
+        BSM.PerformList.Add(enemyAttack); // Add to the PerformList
     }
 
     private IEnumerator TimeForAction()
     {
-        if(actionStarted)
+        if (actionStarted)
         {
             yield break;
         }
 
         actionStarted = true;
 
-        //animate the enemy near the hero to attack
-        Vector3 heroPosition = new Vector3(HeroToAttack.transform.position.x+1.5f, HeroToAttack.transform.position.y, HeroToAttack.transform.position.z);
-        while(MoveTowardsEnemy(heroPosition))
+        // Animate moving towards the hero
+        Vector3 heroPosition = new Vector3(HeroToAttack.transform.position.x + 1.5f, HeroToAttack.transform.position.y, HeroToAttack.transform.position.z);
+        while (MoveTowardsTarget(heroPosition))
         {
             yield return null;
         }
 
-        //wait a bit
+        // Wait briefly before attacking
         yield return new WaitForSeconds(1.0f);
-        //do damage
+
+        // Perform attack
         DoDamage();
 
-        //animate back to start position
-        Vector3 firstPosition = startposition;
-        while(MoveTowardsEnemy(firstPosition))
+        // Animate back to starting position
+        while (MoveTowardsTarget(startPosition))
         {
             yield return null;
         }
 
-        //remove this performer from the list in BSM
-        BSM.PerformList.RemoveAt(0);
+        // Remove this performer from the PerformList
+        if (BSM.PerformList.Count > 0)
+        {
+            BSM.PerformList.RemoveAt(0);
+        }
 
-        //reset battle state machine -> wait
-        BSM.battleStates =  BattleStateMachine.PerformAction.WAIT;
-        //end coroutine
+        // Reset state
+        ResetAfterAction();
 
-        actionStarted =  false;
-        //reset this enemy state
-        cur_coolddown = 0f;
-        currentState = TurnState.PROCESSING;
+        actionStarted = false; // Mark action as complete
     }
 
-    private bool MoveTowardsEnemy(Vector3 target)
+    private bool MoveTowardsTarget(Vector3 target)
     {
-        return target != (transform.position = Vector3.MoveTowards (transform.position, target, animSpeed * Time.deltaTime));
+        return target != (transform.position = Vector3.MoveTowards(transform.position, target, animSpeed * Time.deltaTime));
     }
 
-    private bool MoveTowardsStart(Vector3 target)
+    private void DoDamage()
     {
-        return target != (transform.position = Vector3.MoveTowards (transform.position, target, animSpeed * Time.deltaTime));
+        if (HeroToAttack != null)
+        {
+            // Safely perform damage
+            float calc_damage = enemy.currentATK + (BSM.PerformList.Count > 0 ? BSM.PerformList[0].chosenAttack.attackDamage : 0);
+            HeroToAttack.GetComponent<HeroStateMachine>().TakeDamage(calc_damage);
+        }
+        else
+        {
+            Debug.LogWarning("HeroToAttack is null. Skipping damage.");
+        }
     }
 
-    void DoDamage()
+    private void HandleDeath()
     {
-        float calc_damage = enemy.currentATK +  BSM.PerformList[0].chosenAttack.attackDamage;
-        HeroToAttack.GetComponent<HeroStateMachine> ().TakeDamage(calc_damage);
+        if (!alive)
+        {
+            return;
+        }
+
+        // Update state
+        this.gameObject.tag = "DeadEnemy";
+        BSM.EnemiesInBattle.Remove(this.gameObject);
+        Selector.SetActive(false);
+
+        // Remove from PerformList
+        if (BSM.EnemiesInBattle.Count > 0)
+        {
+            for (int i = 0; i < BSM.PerformList.Count; i++)
+            {
+                if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
+                {
+                    BSM.PerformList.Remove(BSM.PerformList[i]);
+                }
+                else if (BSM.PerformList[i].AttackersTarget == this.gameObject)
+                {
+                    BSM.PerformList[i].AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)];
+                }
+            }
+        }
+
+        // Change appearance to indicate death
+        this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255);
+
+        // Update battle state
+        BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
+        alive = false;
     }
 
     public void TakeDamage(float getDamageAmount)
     {
         enemy.currentHP -= getDamageAmount;
-        if(enemy.currentHP <= 0)
+        if (enemy.currentHP <= 0)
         {
             enemy.currentHP = 0;
             currentState = TurnState.DEAD;
+        }
+    }
+
+    private void ResetAfterAction()
+    {
+        if (BSM.battleStates != BattleStateMachine.PerformAction.WIN && BSM.battleStates != BattleStateMachine.PerformAction.LOSE)
+        {
+            BSM.battleStates = BattleStateMachine.PerformAction.WAIT;
+            cur_coolddown = 0f;
+            currentState = TurnState.PROCESSING;
+        }
+        else
+        {
+            currentState = TurnState.WAITING;
         }
     }
 }
