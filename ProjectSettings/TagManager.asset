@@ -8,6 +8,8 @@ TagManager:
   - Enemy
   - DeadHero
   - DeadEnemy
+  - EnterArea
+  - LeaveArea
   layers:
   - Default
   - TransparentFX
