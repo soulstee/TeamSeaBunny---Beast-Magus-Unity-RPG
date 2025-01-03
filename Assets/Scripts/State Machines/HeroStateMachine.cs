@@ -20,7 +20,7 @@ public class HeroStateMachine : MonoBehaviour
 
     public TurnState currentState;
 
-    // For the ProgressBar
+    // Progress Bar
     private float cur_coolddown = 0f;
     private float max_cooldown = 5f;
     public Image ProgressBar;
@@ -29,6 +29,9 @@ public class HeroStateMachine : MonoBehaviour
     private bool actionStarted = false;
     private Vector3 startPosition;
     public float animSpeed;
+
+    // Animation
+    private Animator animator;
 
     // Dead
     private bool alive = true;
@@ -40,17 +43,16 @@ public class HeroStateMachine : MonoBehaviour
 
     void Start()
     {
-        // Find spacer
         HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer");
-
-        // Create panel, fill in info
         CreateHeroPanel();
 
         startPosition = transform.position;
-        cur_coolddown = Random.Range(0, 2.5f); // Random initial progress
+        cur_coolddown = Random.Range(0, 2.5f);
         Selector.SetActive(false);
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         currentState = TurnState.PROCESSING;
+
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -67,7 +69,6 @@ public class HeroStateMachine : MonoBehaviour
                 break;
 
             case TurnState.WAITING:
-                // Idle
                 break;
 
             case TurnState.ACTION:
@@ -101,35 +102,32 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        // Animate the hero moving towards the enemy
-        Vector3 enemyPosition = new Vector3(EnemyToAttack.transform.position.x - 1.5f, EnemyToAttack.transform.position.y, EnemyToAttack.transform.position.z);
-        while (MoveTowardsTarget(enemyPosition))
+        // Trigger attack animation
+        animator.SetTrigger("Attack");
+        animator.SetTrigger("Magic");
+
+        // Move slightly forward
+        Vector3 forwardPosition = new Vector3(startPosition.x + 0.5f, startPosition.y, startPosition.z);
+        while (MoveTowardsTarget(forwardPosition))
         {
             yield return null;
         }
 
-        // Wait briefly before attacking
-        yield return new WaitForSeconds(1.0f);
+        // Wait for animation to play
+        yield return new WaitForSeconds(0.5f);
 
         // Perform attack
         DoDamage();
 
-        // Animate back to starting position
+        // Move back to the starting position
         while (MoveTowardsTarget(startPosition))
         {
             yield return null;
         }
 
-        // Remove this performer from the PerformList
-        if (BSM.PerformList.Count > 0)
-        {
-            BSM.PerformList.RemoveAt(0);
-        }
-
         // Reset state
         ResetAfterAction();
-
-        actionStarted = false; // Mark action as complete
+        actionStarted = false;
     }
 
     private bool MoveTowardsTarget(Vector3 target)
@@ -141,7 +139,6 @@ public class HeroStateMachine : MonoBehaviour
     {
         if (EnemyToAttack != null)
         {
-            // Safely perform damage
             float calc_damage = hero.currentATK + (BSM.PerformList.Count > 0 ? BSM.PerformList[0].chosenAttack.attackDamage : 0);
             EnemyToAttack.GetComponent<EnemyStateMachine>().TakeDamage(calc_damage);
         }
@@ -158,34 +155,30 @@ public class HeroStateMachine : MonoBehaviour
             return;
         }
 
-        // Update state
         this.gameObject.tag = "DeadHero";
         BSM.HeroesInGame.Remove(this.gameObject);
         BSM.HeroesToManage.Remove(this.gameObject);
         Selector.SetActive(false);
-        BSM.AttackPanel.SetActive(false);
-        BSM.EnemySelectPanel.SetActive(false);
 
-        // Remove from PerformList
         if (BSM.HeroesInGame.Count > 0)
         {
             for (int i = 0; i < BSM.PerformList.Count; i++)
             {
-                if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
+                if (i != 0)
                 {
-                    BSM.PerformList.Remove(BSM.PerformList[i]);
-                }
-                else if (BSM.PerformList[i].AttackersTarget == this.gameObject)
-                {
-                    BSM.PerformList[i].AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)];
+                    if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
+                    {
+                        BSM.PerformList.Remove(BSM.PerformList[i]);
+                    }
+                    else if (BSM.PerformList[i].AttackersTarget == this.gameObject)
+                    {
+                        BSM.PerformList[i].AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)];
+                    }
                 }
             }
         }
 
-        // Change appearance to indicate death
         this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255);
-
-        // Update battle state
         BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
         alive = false;
     }

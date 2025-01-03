@@ -14,8 +14,39 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
-        transform.position = GameManager.instance.nextHeroPosition;
+        if (GameManager.instance.isFirstGameStart)
+        {
+            // Center the player in the scene on first game start
+            transform.position = Vector2.zero; // Adjust as needed for exact center
+            GameManager.instance.isFirstGameStart = false; // Set flag to false
+            Debug.Log("Player spawned at the center of the scene for the first time.");
+        }
+        else if (GameManager.instance.nextSpawnPoint != "")
+        {
+            GameObject spawnPoint = GameObject.Find(GameManager.instance.nextSpawnPoint);
+            if (spawnPoint != null)
+            {
+                transform.position = spawnPoint.transform.position;
+                Debug.Log($"Spawned at: {spawnPoint.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"Spawn point '{GameManager.instance.nextSpawnPoint}' not found. Using default position.");
+            }
+            GameManager.instance.nextSpawnPoint = "";
+        }
+        else if (GameManager.instance.lastHeroPosition != Vector2.zero)
+        {
+            transform.position = GameManager.instance.lastHeroPosition;
+            Debug.Log("Spawned at last known position.");
+            GameManager.instance.lastHeroPosition = Vector2.zero;
+        }
+        else
+        {
+            Debug.LogWarning("No spawn point or last position set. Character may spawn at (0,0).");
+        }
     }
+
 
     // Update is called once per frame
     void Update()
@@ -36,31 +67,84 @@ public class PlayerMovement : MonoBehaviour
         curPos = transform.position;
         if(curPos == lastPos)
         {
-            
+            GameManager.instance.isWalking = false;
         }
         else
         {
-
+            GameManager.instance.isWalking = true;
         }
         lastPos = curPos;
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.tag == "EnterArea")
+        if (other.tag == "Teleporter")
         {
             CollisionHandler col = other.gameObject.GetComponent<CollisionHandler>();
-            GameManager.instance.nextHeroPosition = col.spawnPoint.transform.position;
+            GameManager.instance.nextSpawnPoint = col.spawnPointName;
             GameManager.instance.sceneToLoad = col.sceneToLoad;
             GameManager.instance.LoadNextScene();
         }
 
-        if(other.tag == "LeaveArea")
+        // if(other.tag == "EnterArea")
+        // {
+        //     CollisionHandler col = other.gameObject.GetComponent<CollisionHandler>();
+        //     GameManager.instance.nextHeroPosition = col.spawnPoint.transform.position;
+        //     GameManager.instance.sceneToLoad = col.sceneToLoad;
+        //     GameManager.instance.LoadNextScene();
+        // }
+
+        // if(other.tag == "LeaveArea")
+        // {
+        //     CollisionHandler col = other.gameObject.GetComponent<CollisionHandler>();
+        //     GameManager.instance.nextHeroPosition = col.spawnPoint.transform.position;
+        //     GameManager.instance.sceneToLoad = col.sceneToLoad;
+        //     GameManager.instance.LoadNextScene();
+        // }
+
+        if (other.tag == "Region1")
         {
-            CollisionHandler col = other.gameObject.GetComponent<CollisionHandler>();
-            GameManager.instance.nextHeroPosition = col.spawnPoint.transform.position;
-            GameManager.instance.sceneToLoad = col.sceneToLoad;
-            GameManager.instance.LoadNextScene();
+            GameManager.instance.currentRegions = 0;
+        }
+        if (other.tag == "Region2")
+        {
+            GameManager.instance.currentRegions = 1;
+        }
+
+        if (other.tag == "Region3")
+        {
+            GameManager.instance.currentRegions = 2;
+        }
+
+        if (other.tag == "Region4")
+        {
+            GameManager.instance.currentRegions = 3;
+        }
+
+        if (other.tag == "Region5")
+        {
+            GameManager.instance.currentRegions = 4;
+        }
+
+        if (other.tag == "Region6")
+        {
+            GameManager.instance.currentRegions = 5;
+        }
+    }
+
+    void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.tag == "Region1" || other.tag == "Region2" || other.tag == "Region3" || other.tag == "Region4" || other.tag == "Region5" || other.tag == "Region6")
+        {
+            GameManager.instance.canGetEncounter = true;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.tag == "Region1" || other.tag == "Region2" || other.tag == "Region3" || other.tag == "Region4" || other.tag == "Region5" || other.tag == "Region6")
+        {
+            GameManager.instance.canGetEncounter = false;
         }
     }
 }

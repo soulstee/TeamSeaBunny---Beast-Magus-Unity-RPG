@@ -58,13 +58,27 @@ public class BattleStateMachine : MonoBehaviour
     private GameObject firstHeroToSwitch;
     private GameObject secondHeroToSwitch;
 
+    //Spawn Points
+    public List<Transform> spawnPoints = new List<Transform>();
+
+    void Awake()
+    {
+        for(int i = 0; i < GameManager.instance.enemyAmount; i++)
+        {
+            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], spawnPoints[i].position, Quaternion.identity) as GameObject;
+            NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName + "_" + (i+1);
+            NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName = NewEnemy.name;
+            EnemiesInBattle.Add(NewEnemy);
+        }
+    }
+
     // Initialization
     void Start()
     {
         battleStates = PerformAction.WAIT;
 
         // Initialize heroes and enemies
-        EnemiesInBattle.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
+        //EnemiesInBattle.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
         HeroesInGame.AddRange(GameObject.FindGameObjectsWithTag("Hero"));
 
         // Disable UI panels
@@ -101,6 +115,10 @@ public class BattleStateMachine : MonoBehaviour
 
             case PerformAction.WIN:
                 Debug.Log("You won the battle!");
+
+                GameManager.instance.LoadSceneAfterBattle();
+                GameManager.instance.gameState = GameManager.GameStates.WORLD_STATE;
+                GameManager.instance.enemiesToBattle.Clear();
                 break;
 
             case PerformAction.LOSE:
@@ -344,7 +362,6 @@ public class BattleStateMachine : MonoBehaviour
         if (PerformList[0].Type == "Enemy")
         {
             EnemyStateMachine ESM = performer.GetComponent<EnemyStateMachine>();
-            ESM.HeroToAttack = PerformList[0].AttackersTarget;
             ESM.currentState = EnemyStateMachine.TurnState.ACTION;
         }
         else if (PerformList[0].Type == "Hero")
@@ -357,6 +374,7 @@ public class BattleStateMachine : MonoBehaviour
         PerformList.RemoveAt(0);
         battleStates = PerformAction.PERFORMACTION;
     }
+
 
     // Check if heroes or enemies are still alive
     void CheckAliveStatus()

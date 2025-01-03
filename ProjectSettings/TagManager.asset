@@ -8,8 +8,14 @@ TagManager:
   - Enemy
   - DeadHero
   - DeadEnemy
-  - EnterArea
-  - LeaveArea
+  - Region1
+  - Region2
+  - Region3
+  - Region4
+  - Region5
+  - Region6
+  - OverworldPlayer
+  - Teleporter
   layers:
   - Default
   - TransparentFX

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8594420531679012280}
   - component: {fileID: 5132500590744583195}
+  - component: {fileID: 6356566464706025719}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -44,4 +45,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a30b67f97b1ca1d45b83be26ab7ecf56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentRegions: 0
+  Regions:
+  - regionName: Region1
+    maxAmountEnemies: 4
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - regionName: Region2
+    maxAmountEnemies: 2
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - regionName: Region3
+    maxAmountEnemies: 3
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - regionName: Region4
+    maxAmountEnemies: 4
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - regionName: Region5
+    maxAmountEnemies: 3
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - regionName: Region6
+    maxAmountEnemies: 3
+    BattleScene: BattleScene
+    possibleEnemies:
+    - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  nextSpawnPoint: 
   overworldCharacter: {fileID: 7347339285595160875, guid: 1f43419445f4d5f49b548ff50e44c434, type: 3}
+  nextHeroPosition: {x: 0, y: 0}
+  lastHeroPosition: {x: 0, y: 0}
+  sceneToLoad: 
+  lastScene: 
+  isFirstGameStart: 1
+  isWalking: 0
+  canGetEncounter: 0
+  gotAttacked: 0
+  enemyAmount: 0
+  enemiesToBattle: []
+  gameState: 0
+--- !u!114 &6356566464706025719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8854223259676739515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7377de326ba3ccb43807b31445fd5c45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -27,8 +27,11 @@ public class EnemyStateMachine : MonoBehaviour
     // Position and movement
     private Vector3 startPosition;
     private bool actionStarted = false;
-    public GameObject HeroToAttack;
+    public float moveDistance = 0.5f; // Distance to move forward
     public float animSpeed;
+
+    // Animation
+    private Animator animator;
 
     // Status
     private bool alive = true;
@@ -39,6 +42,8 @@ public class EnemyStateMachine : MonoBehaviour
         currentState = TurnState.PROCESSING;
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         startPosition = transform.position;
+
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -85,7 +90,7 @@ public class EnemyStateMachine : MonoBehaviour
             return;
         }
 
-        // Create a new action
+        // Create a new action for this enemy
         HandleTurn enemyAttack = new HandleTurn
         {
             Attacker = enemy.characterName,
@@ -95,8 +100,8 @@ public class EnemyStateMachine : MonoBehaviour
             chosenAttack = enemy.attacks[Random.Range(0, enemy.attacks.Count)] // Random attack
         };
 
-        Debug.Log($"{enemy.characterName} attacks {enemyAttack.AttackersTarget.name} with {enemyAttack.chosenAttack.attackName}");
-        BSM.PerformList.Add(enemyAttack); // Add to the PerformList
+        Debug.Log($"{enemy.characterName} prepares to attack with {enemyAttack.chosenAttack.attackName}");
+        BSM.PerformList.Add(enemyAttack); // Add to PerformList
     }
 
     private IEnumerator TimeForAction()
@@ -108,24 +113,30 @@ public class EnemyStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        // Animate moving towards the hero
-        Vector3 heroPosition = new Vector3(HeroToAttack.transform.position.x + 1.5f, HeroToAttack.transform.position.y, HeroToAttack.transform.position.z);
-        while (MoveTowardsTarget(heroPosition))
+        // Trigger attack animation
+        animator.SetTrigger("Attack");
+
+        // Move slightly forward
+        Vector3 forwardPosition = new Vector3(startPosition.x + moveDistance, startPosition.y, startPosition.z);
+        while (MoveTowardsTarget(forwardPosition))
         {
             yield return null;
         }
 
         // Wait briefly before attacking
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(0.5f);
 
         // Perform attack
         DoDamage();
 
-        // Animate back to starting position
+        // Move back to the starting position
         while (MoveTowardsTarget(startPosition))
         {
             yield return null;
         }
+
+        // Mark action as complete
+        actionStarted = false;
 
         // Remove this performer from the PerformList
         if (BSM.PerformList.Count > 0)
@@ -135,8 +146,6 @@ public class EnemyStateMachine : MonoBehaviour
 
         // Reset state
         ResetAfterAction();
-
-        actionStarted = false; // Mark action as complete
     }
 
     private bool MoveTowardsTarget(Vector3 target)
@@ -146,15 +155,22 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void DoDamage()
     {
-        if (HeroToAttack != null)
+        if (BSM.HeroesInGame.Count > 0)
         {
-            // Safely perform damage
-            float calc_damage = enemy.currentATK + (BSM.PerformList.Count > 0 ? BSM.PerformList[0].chosenAttack.attackDamage : 0);
-            HeroToAttack.GetComponent<HeroStateMachine>().TakeDamage(calc_damage);
+            // Apply damage to all heroes or a specific hero
+            foreach (GameObject hero in BSM.HeroesInGame)
+            {
+                HeroStateMachine heroState = hero.GetComponent<HeroStateMachine>();
+                if (heroState != null)
+                {
+                    float calc_damage = enemy.currentATK + Random.Range(0, 5); // Add randomness to the damage
+                    heroState.TakeDamage(calc_damage);
+                }
+            }
         }
         else
         {
-            Debug.LogWarning("HeroToAttack is null. Skipping damage.");
+            Debug.LogWarning("No heroes available to attack.");
         }
     }
 
@@ -165,31 +181,27 @@ public class EnemyStateMachine : MonoBehaviour
             return;
         }
 
-        // Update state
         this.gameObject.tag = "DeadEnemy";
         BSM.EnemiesInBattle.Remove(this.gameObject);
         Selector.SetActive(false);
 
-        // Remove from PerformList
         if (BSM.EnemiesInBattle.Count > 0)
         {
             for (int i = 0; i < BSM.PerformList.Count; i++)
             {
-                if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
+                if (i != 0)
                 {
-                    BSM.PerformList.Remove(BSM.PerformList[i]);
-                }
-                else if (BSM.PerformList[i].AttackersTarget == this.gameObject)
-                {
-                    BSM.PerformList[i].AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)];
-                }
+                    if (BSM.PerformList[i].AttackersGameObject == this.gameObject)
+                    {
+                        BSM.PerformList.Remove(BSM.PerformList[i]);
+                    }
+                }    
             }
         }
 
-        // Change appearance to indicate death
         this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255);
+        gameObject.GetComponent<Animator>().enabled = false;
 
-        // Update battle state
         BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
         alive = false;
     }
