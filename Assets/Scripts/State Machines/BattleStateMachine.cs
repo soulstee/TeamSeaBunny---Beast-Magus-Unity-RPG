@@ -11,6 +11,7 @@ public class BattleStateMachine : MonoBehaviour
         WAIT,
         TAKEACTION,
         PERFORMACTION,
+        ENEMYTURN, //Added a state for the enemy turn
         CHECKALIVE,
         WIN,
         LOSE
@@ -61,6 +62,11 @@ public class BattleStateMachine : MonoBehaviour
     //Spawn Points
     public List<Transform> spawnPoints = new List<Transform>();
 
+    //Keep count of whic enemys turn is
+    bool magicUse = false;
+    int enemyInPlayCount = 0;
+    float holdManaCost = 0;
+
     void Awake()
     {
         for(int i = 0; i < GameManager.instance.enemyAmount; i++)
@@ -103,6 +109,10 @@ public class BattleStateMachine : MonoBehaviour
 
             case PerformAction.TAKEACTION:
                 PerformActionStep();
+                break;
+
+            case PerformAction.ENEMYTURN:
+                enemyTurn();
                 break;
 
             case PerformAction.PERFORMACTION:
@@ -154,14 +164,36 @@ public class BattleStateMachine : MonoBehaviour
         }
     }
 
+    // Enemys Turn
+    void enemyTurn()
+    {
+        GameObject enemyInPlay = EnemiesInBattle[enemyInPlayCount];
+        enemyInPlayCount++;
+
+        if(enemyInPlayCount >= EnemiesInBattle.Count)
+            enemyInPlayCount = 0;
+
+        EnemyStateMachine ESM = enemyInPlay.GetComponent<EnemyStateMachine>();
+        ESM.currentState = EnemyStateMachine.TurnState.CHOOSEACTION;
+
+        battleStates = PerformAction.WAIT;
+    }
+
     // Populate action buttons (Attack, Magic, Switch Positions)
     void PopulateActionPanel()
     {
+        /////////////////////////////////////////////////
+        AttackPanel.SetActive(true);
+        EnemySelectPanel.SetActive(false);
+        MagicPanel.SetActive(false);
+        SwitchPositionsPanel.SetActive(false);
+        //////////////////////////////////////////////////
+
         ClearButtons(actionSpacer);
         attackButtons.Clear();
 
         // Attack button
-        CreateButton(actionSpacer, "Attack", () => Input1());
+        CreateButton(actionSpacer, "Attack", () => PopulateAttackPanel());
 
         // Magic button
         CreateButton(actionSpacer, "Magic", () => Input3());
@@ -174,6 +206,8 @@ public class BattleStateMachine : MonoBehaviour
     void PopulateMagicPanel()
     {
         ClearButtons(magicSpacer);
+
+        magicUse = true;
 
         GameObject activeHero = HeroesToManage[0];
         HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
@@ -189,6 +223,7 @@ public class BattleStateMachine : MonoBehaviour
         {
             Debug.LogWarning("No magic spells available for this hero.");
         }
+        CreateButton(magicSpacer, "Back", () => PopulateActionPanel());
     }
 
     // Create enemy selection buttons
@@ -294,21 +329,46 @@ public class BattleStateMachine : MonoBehaviour
     }
 
     // Hero Input Handlers
-    public void Input1()
+    public void Input1(BaseAttack chosenAttack)
     {
+        magicUse = false; ////////////////////////////////////
         HeroChoice = new HandleTurn
         {
             Attacker = HeroesToManage[0].name,
             AttackersGameObject = HeroesToManage[0],
             Type = "Hero",
-            chosenAttack = HeroesToManage[0].GetComponent<HeroStateMachine>().hero.attacks[0]
+            chosenAttack = chosenAttack,
         };
 
         AttackPanel.SetActive(false);
         EnemySelectPanel.SetActive(true);
         CreateEnemyButtons();
     }
+    
+    /////////////////////////////////////////////////////
+    void PopulateAttackPanel()
+    {
+        ClearButtons(actionSpacer);
 
+        magicUse = false;
+
+        GameObject activeHero = HeroesToManage[0];
+        HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
+
+        if (heroState != null && heroState.hero.attacks.Count > 0)
+        {
+            foreach (BaseAttack atk in heroState.hero.attacks)
+            {
+                CreateButton(actionSpacer, atk.attackName, () => Input1(atk));
+            }
+        }
+        else
+        {
+            Debug.LogWarning("No attacks available for this hero.");
+        }
+        CreateButton(actionSpacer, "Back", () => PopulateActionPanel());
+    }
+    /////////////////////////////////////////////////////////////////
     public void Input3()
     {
         AttackPanel.SetActive(false);
@@ -318,23 +378,34 @@ public class BattleStateMachine : MonoBehaviour
 
     public void Input4(BaseAttack chosenMagic)
     {
-        HeroChoice = new HandleTurn
+        HeroStateMachine HSM = HeroesToManage[0].GetComponent<HeroStateMachine>();
+        if(HSM.hero.currentMP > chosenMagic.attackManaCost)
         {
-            Attacker = HeroesToManage[0].name,
-            AttackersGameObject = HeroesToManage[0],
-            Type = "Hero",
-            chosenAttack = chosenMagic
-        };
+            holdManaCost = chosenMagic.attackManaCost; /////////////////////////////////
+            HeroChoice = new HandleTurn
+            {
+                Attacker = HeroesToManage[0].name,
+                AttackersGameObject = HeroesToManage[0],
+                Type = "Hero",
+                chosenAttack = chosenMagic
+            };
 
-        MagicPanel.SetActive(false);
-        EnemySelectPanel.SetActive(true);
-        CreateEnemyButtons();
+            MagicPanel.SetActive(false);
+            EnemySelectPanel.SetActive(true);
+            CreateEnemyButtons();
+        }
+        else
+        {
+            Debug.Log("Not enogh mana");
+        }
     }
 
     public void Input2(GameObject chosenEnemy)
     {
         HeroChoice.AttackersTarget = chosenEnemy;
         HeroInput = HEROGUI.DONE;
+
+        battleStates = PerformAction.ENEMYTURN; ////////////////////////////////
     }
 
     public void InputSwitchPositions()
@@ -369,6 +440,9 @@ public class BattleStateMachine : MonoBehaviour
             HeroStateMachine HSM = performer.GetComponent<HeroStateMachine>();
             HSM.EnemyToAttack = PerformList[0].AttackersTarget;
             HSM.currentState = HeroStateMachine.TurnState.ACTION;
+            ////////////////////////////////////////////////////
+            if(magicUse)
+                HSM.hero.currentMP -= holdManaCost;
         }
 
         PerformList.RemoveAt(0);

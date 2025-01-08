@@ -21,14 +21,15 @@ public class HeroStateMachine : MonoBehaviour
     public TurnState currentState;
 
     // Progress Bar
-    private float cur_coolddown = 0f;
-    private float max_cooldown = 5f;
+    public float cur_coolddown = 0f;
+    public float max_cooldown = 5f;
     public Image ProgressBar;
     public GameObject Selector;
     public GameObject EnemyToAttack;
     private bool actionStarted = false;
     private Vector3 startPosition;
     public float animSpeed;
+    int count = 0; //Count the amount of times it runs
 
     // Animation
     private Animator animator;
@@ -47,7 +48,7 @@ public class HeroStateMachine : MonoBehaviour
         CreateHeroPanel();
 
         startPosition = transform.position;
-        cur_coolddown = Random.Range(0, 2.5f);
+        //cur_coolddown = Random.Range(0, 2.5f);
         Selector.SetActive(false);
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         currentState = TurnState.PROCESSING;
@@ -57,10 +58,13 @@ public class HeroStateMachine : MonoBehaviour
 
     void Update()
     {
+        UpgradeProgressBar();
+
         switch (currentState)
         {
             case TurnState.PROCESSING:
-                UpgradeProgressBar();
+                //UpgradeProgressBar();
+                currentState = TurnState.ADDTOLIST;
                 break;
 
             case TurnState.ADDTOLIST:
@@ -83,14 +87,19 @@ public class HeroStateMachine : MonoBehaviour
 
     void UpgradeProgressBar()
     {
+        //////////////////////////////////////////
+        stats.HeroHP.text = "HP: " + hero.currentHP;
+        stats.HeroMP.text = "MP: " + hero.currentMP;
+        ////////////////////////////////////////////
+        
         cur_coolddown += Time.deltaTime;
         float calc_cooldown = cur_coolddown / max_cooldown;
-        ProgressBar.transform.localScale = new Vector3(Mathf.Clamp(calc_cooldown, 0, 1), ProgressBar.transform.localScale.y, ProgressBar.transform.localScale.z);
+        ProgressBar.transform.localScale = new Vector3(Mathf.Clamp(calc_cooldown, hero.baseHP / hero.baseHP, hero.currentHP / hero.baseHP), ProgressBar.transform.localScale.y, ProgressBar.transform.localScale.z);
 
-        if (cur_coolddown >= max_cooldown)
+        /*if (cur_coolddown >= max_cooldown)
         {
             currentState = TurnState.ADDTOLIST;
-        }
+        }*/
     }
 
     private IEnumerator TimeForAction()
@@ -192,7 +201,7 @@ public class HeroStateMachine : MonoBehaviour
             currentState = TurnState.DEAD;
         }
 
-        UpdateHeroPanel();
+        //UpdateHeroPanel();
     }
 
     private void ResetAfterAction()
@@ -221,9 +230,9 @@ public class HeroStateMachine : MonoBehaviour
         HeroPanel.transform.SetParent(HeroPanelSpacer, false);
     }
 
-    private void UpdateHeroPanel()
+    /*private void UpdateHeroPanel()
     {
         stats.HeroHP.text = "HP: " + hero.currentHP;
         stats.HeroMP.text = "MP: " + hero.currentMP;
-    }
+    }*/
 }

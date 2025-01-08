@@ -8,6 +8,7 @@ public class EnemyStateMachine : MonoBehaviour
     public BaseEnemy enemy;
 
     public GameObject Selector;
+    public GameObject target; //Hold the target of the next attack
 
     public enum TurnState
     {
@@ -36,6 +37,9 @@ public class EnemyStateMachine : MonoBehaviour
     // Status
     private bool alive = true;
 
+    //Special Attack
+    public bool special = false;
+
     void Start()
     {
         Selector.SetActive(false);
@@ -51,23 +55,28 @@ public class EnemyStateMachine : MonoBehaviour
         switch (currentState)
         {
             case TurnState.PROCESSING:
+                Selector.SetActive(false); 
                 UpdateProgressBar();
                 break;
 
             case TurnState.CHOOSEACTION:
+                //Selector.SetActive(true);
                 ChooseAction();
                 currentState = TurnState.WAITING;
                 break;
 
             case TurnState.WAITING:
+                Selector.SetActive(false);
                 // Idle state
                 break;
 
             case TurnState.ACTION:
+                //Selector.SetActive(true);
                 StartCoroutine(TimeForAction());
                 break;
 
             case TurnState.DEAD:
+                Selector.SetActive(false);
                 HandleDeath();
                 break;
         }
@@ -78,34 +87,38 @@ public class EnemyStateMachine : MonoBehaviour
         cur_coolddown += Time.deltaTime;
         if (cur_coolddown >= max_cooldown)
         {
-            currentState = TurnState.CHOOSEACTION;
+            //currentState = TurnState.CHOOSEACTION;
         }
     }
 
     private void ChooseAction()
     {
+        Selector.SetActive(true);
         if (BSM.HeroesInGame.Count == 0)
         {
             Debug.LogWarning("No heroes left to target.");
             return;
         }
 
+        target = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)]; // Hold Random hero target
         // Create a new action for this enemy
         HandleTurn enemyAttack = new HandleTurn
         {
             Attacker = enemy.characterName,
             Type = "Enemy",
-            AttackersGameObject = this.gameObject,
-            AttackersTarget = BSM.HeroesInGame[Random.Range(0, BSM.HeroesInGame.Count)], // Random hero target
+            AttackersGameObject = this.gameObject,        
+            AttackersTarget = target, // Set hero target 
             chosenAttack = enemy.attacks[Random.Range(0, enemy.attacks.Count)] // Random attack
         };
 
-        Debug.Log($"{enemy.characterName} prepares to attack with {enemyAttack.chosenAttack.attackName}");
+        Debug.Log($"{enemy.characterName} prepares to attack with {enemyAttack.chosenAttack.attackName} at {enemyAttack.AttackersTarget}");
         BSM.PerformList.Add(enemyAttack); // Add to PerformList
+        Selector.SetActive(false);
     }
 
     private IEnumerator TimeForAction()
     {
+        Selector.SetActive(true);
         if (actionStarted)
         {
             yield break;
@@ -124,7 +137,7 @@ public class EnemyStateMachine : MonoBehaviour
         }
 
         // Wait briefly before attacking
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
 
         // Perform attack
         DoDamage();
@@ -144,6 +157,8 @@ public class EnemyStateMachine : MonoBehaviour
             BSM.PerformList.RemoveAt(0);
         }
 
+        Selector.SetActive(false);
+
         // Reset state
         ResetAfterAction();
     }
@@ -153,14 +168,27 @@ public class EnemyStateMachine : MonoBehaviour
         return target != (transform.position = Vector3.MoveTowards(transform.position, target, animSpeed * Time.deltaTime));
     }
 
-    private void DoDamage()
+    private void DoDamage() 
     {
         if (BSM.HeroesInGame.Count > 0)
         {
-            // Apply damage to all heroes or a specific hero
-            foreach (GameObject hero in BSM.HeroesInGame)
+            if(special)
             {
-                HeroStateMachine heroState = hero.GetComponent<HeroStateMachine>();
+                // Apply damage to all heroes
+                foreach (GameObject hero in BSM.HeroesInGame)
+                {
+                    HeroStateMachine heroState = hero.GetComponent<HeroStateMachine>();
+                    if (heroState != null)
+                    {
+                        float calc_damage = enemy.currentATK + Random.Range(0, 5); // Add randomness to the damage
+                        heroState.TakeDamage(calc_damage);
+                    }
+                }
+            }
+            else
+            {
+                //Attack an especific hero
+                HeroStateMachine heroState = target.GetComponent<HeroStateMachine>();
                 if (heroState != null)
                 {
                     float calc_damage = enemy.currentATK + Random.Range(0, 5); // Add randomness to the damage

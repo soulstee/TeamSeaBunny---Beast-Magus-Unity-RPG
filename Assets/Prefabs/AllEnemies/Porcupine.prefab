@@ -101,8 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemy:
     characterName: Porcupine
-    baseHP: 5
-    currentHP: 5
+    baseHP: 500
+    currentHP: 500
     baseMP: 0
     currentMP: 0
     baseATK: 5
@@ -115,7 +115,7 @@ MonoBehaviour:
     rarity: 0
   Selector: {fileID: 5094935834779952678}
   currentState: 0
-  HeroToAttack: {fileID: 0}
+  moveDistance: 0.5
   animSpeed: 30
 --- !u!95 &4468235967484100789
 Animator:

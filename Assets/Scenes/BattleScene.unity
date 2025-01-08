@@ -620,6 +620,68 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &680438106
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 680438108}
+  - component: {fileID: 680438107}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &680438107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680438106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a30b67f97b1ca1d45b83be26ab7ecf56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentRegions: 0
+  Regions: []
+  nextSpawnPoint: 
+  overworldCharacter: {fileID: 0}
+  nextHeroPosition: {x: 0, y: 0}
+  lastHeroPosition: {x: 0, y: 0}
+  sceneToLoad: 
+  lastScene: 
+  isFirstGameStart: 1
+  isWalking: 0
+  canGetEncounter: 0
+  gotAttacked: 0
+  enemyAmount: 3
+  enemiesToBattle:
+  - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  - {fileID: 7915896656900341624, guid: 53751bf99c525b74f95a75fc2a1c763e, type: 3}
+  gameState: 2
+--- !u!4 &680438108
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680438106}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.0396023, y: 0.06203953, z: -0.069057286}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &713437242
 GameObject:
   m_ObjectHideFlags: 0
@@ -1393,7 +1455,7 @@ Transform:
   m_GameObject: {fileID: 1377716174}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.96, y: -0.12, z: 0}
+  m_LocalPosition: {x: 1.69, y: -0.37, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2086,6 +2148,14 @@ PrefabInstance:
       value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 6714173541194994399, guid: 88db506fc423fd54cb96f89869d55ada, type: 3}
+      propertyPath: max_cooldown
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714173541194994399, guid: 88db506fc423fd54cb96f89869d55ada, type: 3}
+      propertyPath: cur_coolddown
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6714173541194994399, guid: 88db506fc423fd54cb96f89869d55ada, type: 3}
       propertyPath: hero.currentHP
       value: 150
       objectReference: {fileID: 0}
@@ -2178,3 +2248,4 @@ SceneRoots:
   - {fileID: 929775283}
   - {fileID: 1984071060}
   - {fileID: 1237859961}
+  - {fileID: 680438108}
