@@ -53,23 +53,27 @@ public class BattleStateMachine : MonoBehaviour
     public Transform Spacer;
 
     // Other variables
-    private HandleTurn HeroChoice;
+    public HandleTurn HeroChoice;
     private List<GameObject> attackButtons = new List<GameObject>();
     private List<GameObject> enemyButtons = new List<GameObject>();
-    private GameObject firstHeroToSwitch;
-    private GameObject secondHeroToSwitch;
+    private GameObject firstHeroToSwitch = null;
+    private GameObject secondHeroToSwitch = null;
 
     //Spawn Points
     public List<Transform> spawnPoints = new List<Transform>();
 
     //Keep count of whic enemys turn is
     bool magicUse = false;
-    int enemyInPlayCount = 0;
+    public int enemyInPlayCount = 0;
     float holdManaCost = 0;
+    public bool heroTurn = true;
+    public GameObject winCanva;
+    public GameObject defeatCanva;
 
     void Awake()
     {
-        for(int i = 0; i < GameManager.instance.enemyAmount; i++)
+        // Initializeenemies
+        for (int i = 0; i < GameManager.instance.enemyAmount; i++)
         {
             GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], spawnPoints[i].position, Quaternion.identity) as GameObject;
             NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName + "_" + (i+1);
@@ -83,8 +87,7 @@ public class BattleStateMachine : MonoBehaviour
     {
         battleStates = PerformAction.WAIT;
 
-        // Initialize heroes and enemies
-        //EnemiesInBattle.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
+        // Initialize heroes
         HeroesInGame.AddRange(GameObject.FindGameObjectsWithTag("Hero"));
 
         // Disable UI panels
@@ -93,8 +96,8 @@ public class BattleStateMachine : MonoBehaviour
         MagicPanel.SetActive(false);
         SwitchPositionsPanel.SetActive(false);
 
-        // Create enemy buttons
-        CreateEnemyButtons();
+        //Create enemy buttons
+        //CreateEnemyButtons();
     }
 
     void Update()
@@ -124,15 +127,11 @@ public class BattleStateMachine : MonoBehaviour
                 break;
 
             case PerformAction.WIN:
-                Debug.Log("You won the battle!");
-
-                GameManager.instance.LoadSceneAfterBattle();
-                GameManager.instance.gameState = GameManager.GameStates.WORLD_STATE;
-                GameManager.instance.enemiesToBattle.Clear();
+                StartCoroutine(winWait(true));
                 break;
 
             case PerformAction.LOSE:
-                Debug.Log("You lost the battle.");
+                StartCoroutine(winWait(false));
                 break;
         }
 
@@ -140,13 +139,16 @@ public class BattleStateMachine : MonoBehaviour
         switch (HeroInput)
         {
             case HEROGUI.ACTIVATE:
-                if (HeroesToManage.Count > 0)
+                if(heroTurn)
                 {
-                    HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(true);
-                    HeroChoice = new HandleTurn();
-                    AttackPanel.SetActive(true);
-                    PopulateActionPanel();
-                    HeroInput = HEROGUI.WAITING;
+                    if (HeroesToManage.Count > 0)
+                    {
+                        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(true);
+                        HeroChoice = new HandleTurn();
+                        AttackPanel.SetActive(true);
+                        PopulateActionPanel();
+                        HeroInput = HEROGUI.WAITING;
+                    }
                 }
                 break;
 
@@ -155,39 +157,79 @@ public class BattleStateMachine : MonoBehaviour
                 break;
 
             case HEROGUI.SWITCHPOSITIONS:
-                PopulateSwitchPositionsPanel();
+                //PopulateSwitchPositionsPanel();
                 break;
 
             case HEROGUI.DONE:
+                //heroTurn = false;
                 FinalizeHeroInput();
                 break;
         }
     }
 
+    public void ToCheck()
+    {
+        battleStates = PerformAction.CHECKALIVE;
+    }
+    // Perform the next action
+    void PerformActionStep()
+    {
+        GameObject performer = PerformList[0].AttackersGameObject;
+
+        if (PerformList[0].Type == "Enemy")
+        {
+            EnemyStateMachine ESM = performer.GetComponent<EnemyStateMachine>();
+            ESM.currentState = EnemyStateMachine.TurnState.ACTION;
+        }
+        else if (PerformList[0].Type == "Hero")
+        {
+            HeroStateMachine HSM = performer.GetComponent<HeroStateMachine>();
+            HSM.EnemyToAttack = PerformList[0].AttackersTarget;
+            HSM.currentState = HeroStateMachine.TurnState.ACTION;
+            //Reduce mana of current Hero
+            if (magicUse)
+                HSM.hero.currentMP -= holdManaCost;
+        }
+
+        PerformList.RemoveAt(0);
+        battleStates = PerformAction.PERFORMACTION;     
+    }
+    
     // Enemys Turn
     void enemyTurn()
     {
+        EnemyStateMachine ESM = null;
+
+        if (enemyInPlayCount >= EnemiesInBattle.Count)
+            enemyInPlayCount = 0;
+
         GameObject enemyInPlay = EnemiesInBattle[enemyInPlayCount];
         enemyInPlayCount++;
 
-        if(enemyInPlayCount >= EnemiesInBattle.Count)
+        if (enemyInPlayCount >= EnemiesInBattle.Count)
             enemyInPlayCount = 0;
 
-        EnemyStateMachine ESM = enemyInPlay.GetComponent<EnemyStateMachine>();
+        ESM = enemyInPlay.GetComponent<EnemyStateMachine>();
+        if (ESM.currentState == EnemyStateMachine.TurnState.DEAD)
+        {
+            enemyInPlayCount++;
+            enemyTurn();
+            Debug.Log($"{ESM.enemy.characterName} Dead Battle");
+        }
         ESM.currentState = EnemyStateMachine.TurnState.CHOOSEACTION;
 
-        battleStates = PerformAction.WAIT;
+        battleStates = PerformAction.WAIT;    
     }
 
+    //UI
     // Populate action buttons (Attack, Magic, Switch Positions)
     void PopulateActionPanel()
     {
-        /////////////////////////////////////////////////
+        //Reset Panels
         AttackPanel.SetActive(true);
         EnemySelectPanel.SetActive(false);
         MagicPanel.SetActive(false);
         SwitchPositionsPanel.SetActive(false);
-        //////////////////////////////////////////////////
 
         ClearButtons(actionSpacer);
         attackButtons.Clear();
@@ -196,15 +238,42 @@ public class BattleStateMachine : MonoBehaviour
         CreateButton(actionSpacer, "Attack", () => PopulateAttackPanel());
 
         // Magic button
-        CreateButton(actionSpacer, "Magic", () => Input3());
+        //CreateButton(actionSpacer, "Magic", () => Input3());
+        CreateButton(actionSpacer, "Magic", () => PopulateMagicPanel());
 
         // Switch Positions button
-        CreateButton(actionSpacer, "Switch Positions", () => InputSwitchPositions());
+        CreateButton(actionSpacer, "Switch Positions", () => PopulateSwitchPositionsPanel());
+    }
+
+    //Populate Attack Panel with hero's attack
+    void PopulateAttackPanel()
+    {
+        ClearButtons(actionSpacer);
+
+        magicUse = false;
+
+        GameObject activeHero = HeroesToManage[0];
+        HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
+
+        if (heroState != null && heroState.hero.attacks.Count > 0)
+        {
+            foreach (BaseAttack atk in heroState.hero.attacks)
+            {
+                CreateButton(actionSpacer, atk.attackName, () => Input1(atk));
+            }
+        }
+        else
+        {
+            Debug.LogWarning("No attacks available for this hero.");
+        }
+        CreateButton(actionSpacer, "Back", () => PopulateActionPanel());
     }
 
     // Populate Magic Panel with hero's spells
     void PopulateMagicPanel()
     {
+        AttackPanel.SetActive(false);
+        MagicPanel.SetActive(true);
         ClearButtons(magicSpacer);
 
         magicUse = true;
@@ -234,79 +303,68 @@ public class BattleStateMachine : MonoBehaviour
 
         foreach (GameObject enemy in EnemiesInBattle)
         {
-            GameObject newButton = Instantiate(enemyButton);
-            EnemySelectButton button = newButton.GetComponent<EnemySelectButton>();
+            //GameObject newButton = Instantiate(enemyButton);
+            //EnemySelectButton button = newButton.GetComponent<EnemySelectButton>();
             EnemyStateMachine curEnemy = enemy.GetComponent<EnemyStateMachine>();
 
-            // Set button text and target
-            newButton.GetComponentInChildren<Text>().text = curEnemy.enemy.characterName;
-            button.EnemyPrefab = enemy;
-
-            // Add click event to select this enemy
-            newButton.GetComponent<Button>().onClick.AddListener(() =>
+            if (curEnemy.currentState != EnemyStateMachine.TurnState.DEAD)
             {
-                Input2(enemy);
-            });
+                GameObject newButton = Instantiate(enemyButton);
+                EnemySelectButton button = newButton.GetComponent<EnemySelectButton>();
 
-            newButton.transform.SetParent(Spacer, false);
-            enemyButtons.Add(newButton);
+                // Set button text and target
+                newButton.GetComponentInChildren<Text>().text = curEnemy.enemy.characterName;
+                button.EnemyPrefab = enemy;
+
+                // Add click event to select this enemy
+                newButton.GetComponent<Button>().onClick.AddListener(() =>
+                {
+                    Input2(enemy);
+                });
+
+                newButton.transform.SetParent(Spacer, false);
+                enemyButtons.Add(newButton);
+            }           
         }
+        CreateButton(Spacer, "Back", () => PopulateActionPanel());
     }
 
     // Populate Switch Positions Panel
     void PopulateSwitchPositionsPanel()
     {
+        AttackPanel.SetActive(false);
+        HeroInput = HEROGUI.SWITCHPOSITIONS;
         ClearButtons(switchPositionsSpacer);
+
+        firstHeroToSwitch = HeroesToManage[0];//Add hero in current turn to switch
+        secondHeroToSwitch = null;
 
         foreach (GameObject hero in HeroesInGame)
         {
-            GameObject newButton = Instantiate(actionButton);
-            newButton.GetComponentInChildren<Text>().text = hero.name;
-
-            // Add click event to select the hero
-            newButton.GetComponent<Button>().onClick.AddListener(() =>
+            if(hero != firstHeroToSwitch)
             {
-                SelectHeroForSwitch(hero);
-            });
+                HeroStateMachine heroState = hero.GetComponent<HeroStateMachine>();
 
-            newButton.transform.SetParent(switchPositionsSpacer, false);
+                CreateButton(switchPositionsSpacer, heroState.hero.characterName, () => SelectHeroForSwitch(hero));
+            }   
         }
 
         SwitchPositionsPanel.SetActive(true);
+        CreateButton(switchPositionsSpacer, "Back", () => PopulateActionPanel());
     }
 
     // Select heroes to switch positions
     public void SelectHeroForSwitch(GameObject selectedHero)
     {
-        if (firstHeroToSwitch == null)
-        {
-            firstHeroToSwitch = selectedHero;
-            Debug.Log($"First hero selected: {firstHeroToSwitch.name}");
-        }
-        else if (secondHeroToSwitch == null)
+        if (secondHeroToSwitch == null)
         {
             secondHeroToSwitch = selectedHero;
             Debug.Log($"Second hero selected: {secondHeroToSwitch.name}");
             SwapHeroPositions();
         }
-    }
-
-    // Swap the positions of the selected heroes
-    void SwapHeroPositions()
-    {
-        if (firstHeroToSwitch != null && secondHeroToSwitch != null)
+        else
         {
-            Vector3 tempPosition = firstHeroToSwitch.transform.position;
-            firstHeroToSwitch.transform.position = secondHeroToSwitch.transform.position;
-            secondHeroToSwitch.transform.position = tempPosition;
-
-            Debug.Log($"Swapped positions: {firstHeroToSwitch.name} and {secondHeroToSwitch.name}");
-
-            firstHeroToSwitch = null;
-            secondHeroToSwitch = null;
-            SwitchPositionsPanel.SetActive(false);
-
-            HeroInput = HEROGUI.ACTIVATE;
+            Debug.Log("Error Swapping Heros");
         }
     }
 
@@ -318,7 +376,6 @@ public class BattleStateMachine : MonoBehaviour
         newButton.GetComponent<Button>().onClick.AddListener(onClick);
         newButton.transform.SetParent(parent, false);
     }
-
     // Clear buttons from a spacer
     void ClearButtons(Transform spacer)
     {
@@ -328,7 +385,34 @@ public class BattleStateMachine : MonoBehaviour
         }
     }
 
-    // Hero Input Handlers
+    //Acions
+    // Swap the positions of the selected heroes
+    void SwapHeroPositions()
+    {
+        if (firstHeroToSwitch != null && secondHeroToSwitch != null)
+        {
+            HeroStateMachine firstHeroState = firstHeroToSwitch.GetComponent<HeroStateMachine>();
+            HeroStateMachine secondHeroState = secondHeroToSwitch.GetComponent<HeroStateMachine>();
+            Vector3 tempPos = firstHeroState.startPosition;
+            firstHeroState.startPosition =  secondHeroState.startPosition;
+            secondHeroState.startPosition = tempPos;
+
+            Vector3 tempPosition = firstHeroToSwitch.transform.position;
+            firstHeroToSwitch.transform.position = secondHeroToSwitch.transform.position;
+            secondHeroToSwitch.transform.position = tempPosition;
+
+            Debug.Log($"Swapped positions: {firstHeroToSwitch.name} and {secondHeroToSwitch.name}");
+
+            firstHeroToSwitch = null;
+            secondHeroToSwitch = null;
+            SwitchPositionsPanel.SetActive(false);
+
+            HeroInput = HEROGUI.ACTIVATE;
+            //Hero can attack after swaping
+        }
+    }
+
+    // Physical Attack
     public void Input1(BaseAttack chosenAttack)
     {
         magicUse = false; ////////////////////////////////////
@@ -345,37 +429,7 @@ public class BattleStateMachine : MonoBehaviour
         CreateEnemyButtons();
     }
     
-    /////////////////////////////////////////////////////
-    void PopulateAttackPanel()
-    {
-        ClearButtons(actionSpacer);
-
-        magicUse = false;
-
-        GameObject activeHero = HeroesToManage[0];
-        HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
-
-        if (heroState != null && heroState.hero.attacks.Count > 0)
-        {
-            foreach (BaseAttack atk in heroState.hero.attacks)
-            {
-                CreateButton(actionSpacer, atk.attackName, () => Input1(atk));
-            }
-        }
-        else
-        {
-            Debug.LogWarning("No attacks available for this hero.");
-        }
-        CreateButton(actionSpacer, "Back", () => PopulateActionPanel());
-    }
-    /////////////////////////////////////////////////////////////////
-    public void Input3()
-    {
-        AttackPanel.SetActive(false);
-        MagicPanel.SetActive(true);
-        PopulateMagicPanel();
-    }
-
+    //Magic Attack
     public void Input4(BaseAttack chosenMagic)
     {
         HeroStateMachine HSM = HeroesToManage[0].GetComponent<HeroStateMachine>();
@@ -400,19 +454,13 @@ public class BattleStateMachine : MonoBehaviour
         }
     }
 
+    //Finish Attack
     public void Input2(GameObject chosenEnemy)
     {
         HeroChoice.AttackersTarget = chosenEnemy;
         HeroInput = HEROGUI.DONE;
 
-        battleStates = PerformAction.ENEMYTURN; ////////////////////////////////
-    }
-
-    public void InputSwitchPositions()
-    {
-        AttackPanel.SetActive(false);
-        HeroInput = HEROGUI.SWITCHPOSITIONS;
-        PopulateSwitchPositionsPanel();
+        heroTurn = false;
     }
 
     void FinalizeHeroInput()
@@ -422,48 +470,77 @@ public class BattleStateMachine : MonoBehaviour
         ClearButtons(actionSpacer);
         HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false);
         HeroesToManage.RemoveAt(0);
+        heroTurn = false;
         HeroInput = HEROGUI.ACTIVATE;
+
+        //battleStates = PerformAction.CHECKALIVE;
     }
-
-    // Perform the next action
-    void PerformActionStep()
-    {
-        GameObject performer = PerformList[0].AttackersGameObject;
-
-        if (PerformList[0].Type == "Enemy")
-        {
-            EnemyStateMachine ESM = performer.GetComponent<EnemyStateMachine>();
-            ESM.currentState = EnemyStateMachine.TurnState.ACTION;
-        }
-        else if (PerformList[0].Type == "Hero")
-        {
-            HeroStateMachine HSM = performer.GetComponent<HeroStateMachine>();
-            HSM.EnemyToAttack = PerformList[0].AttackersTarget;
-            HSM.currentState = HeroStateMachine.TurnState.ACTION;
-            ////////////////////////////////////////////////////
-            if(magicUse)
-                HSM.hero.currentMP -= holdManaCost;
-        }
-
-        PerformList.RemoveAt(0);
-        battleStates = PerformAction.PERFORMACTION;
-    }
-
 
     // Check if heroes or enemies are still alive
     void CheckAliveStatus()
     {
+        //Count how many enemys are dead
+        /*int enemyDeadCount = 0;
+        foreach (GameObject enemy in EnemiesInBattle)
+        {
+            EnemyStateMachine curEnemy = enemy.GetComponent<EnemyStateMachine>();
+
+            if (curEnemy.currentState == EnemyStateMachine.TurnState.DEAD)
+            {
+                enemyDeadCount++;
+            }
+        }*/
+
         if (HeroesInGame.Count < 1)
         {
             battleStates = PerformAction.LOSE;
         }
-        else if (EnemiesInBattle.Count < 1)
+        /*else if (enemyDeadCount == EnemiesInBattle.Count)
         {
             battleStates = PerformAction.WIN;
+        }*/
+        else if(EnemiesInBattle.Count < 1)
+            battleStates = PerformAction.WIN;
+        else
+        {
+            if (heroTurn)
+            {
+                HeroInput = HEROGUI.ACTIVATE;
+            }
+            else
+            {
+                battleStates = PerformAction.ENEMYTURN; //Enemy Turn
+            }
+            
+        }
+    }
+
+    private IEnumerator winWait(bool a)
+    {
+        if (a)
+        {
+            yield return new WaitForSeconds(1f);
+
+            winCanva.SetActive(true);
+
+            yield return new WaitForSeconds(1f);
+
+            GameManager.instance.gameState = GameManager.GameStates.WORLD_STATE;
+            GameManager.instance.enemiesToBattle.Clear();
+            GameManager.instance.LoadSceneAfterBattle();
         }
         else
         {
-            HeroInput = HEROGUI.ACTIVATE;
+            yield return new WaitForSeconds(1f);
+
+            defeatCanva.SetActive(true);
+
+            yield return new WaitForSeconds(1f);
+
+            GameManager.instance.gameState = GameManager.GameStates.WORLD_STATE;
+            GameManager.instance.enemiesToBattle.Clear();
+            GameManager.instance.LoadSceneAfterBattle();
         }
+           
     }
 }

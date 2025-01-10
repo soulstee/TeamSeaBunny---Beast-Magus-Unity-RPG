@@ -104,11 +104,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (other.tag == "Region1")
         {
-            GameManager.instance.currentRegions = 0;
+            //GameManager.instance.currentRegions = 0;
+            GameManager.instance.gotAttacked = true;
         }
         if (other.tag == "Region2")
         {
-            GameManager.instance.currentRegions = 1;
+            //GameManager.instance.currentRegions = 1;
+            //GameManager.instance.loadCabin();
         }
 
         if (other.tag == "Region3")

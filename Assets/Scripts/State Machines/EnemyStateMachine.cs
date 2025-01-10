@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyStateMachine : MonoBehaviour
 {
     private BattleStateMachine BSM;
     public BaseEnemy enemy;
+
+    public GameObject slider;
 
     public GameObject Selector;
     public GameObject target; //Hold the target of the next attack
@@ -52,17 +55,29 @@ public class EnemyStateMachine : MonoBehaviour
 
     void Update()
     {
+        slider.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.baseHP / enemy.baseHP, enemy.currentHP / enemy.baseHP), slider.transform.localScale.y, slider.transform.localScale.z);
+
+        /*if (enemy.currentHP <= 0)
+        {
+            enemy.currentHP = 0;
+            currentState = TurnState.DEAD;
+        }*/
+
         switch (currentState)
         {
             case TurnState.PROCESSING:
                 Selector.SetActive(false); 
-                UpdateProgressBar();
+                //UpdateProgressBar();
                 break;
 
             case TurnState.CHOOSEACTION:
+                //StartCoroutine(wait());
                 //Selector.SetActive(true);
-                ChooseAction();
-                currentState = TurnState.WAITING;
+                if (enemy.currentHP > 0)
+                {
+                    ChooseAction();
+                    currentState = TurnState.WAITING;
+                }
                 break;
 
             case TurnState.WAITING:
@@ -131,6 +146,8 @@ public class EnemyStateMachine : MonoBehaviour
 
         // Move slightly forward
         Vector3 forwardPosition = new Vector3(startPosition.x + moveDistance, startPosition.y, startPosition.z);
+        //Move to the traget position
+        //Vector3 forwardPosition = new Vector3(target.transform.position.x - moveDistance, startPosition.y, startPosition.z);
         while (MoveTowardsTarget(forwardPosition))
         {
             yield return null;
@@ -187,11 +204,12 @@ public class EnemyStateMachine : MonoBehaviour
             }
             else
             {
+                int choosenAttack = Random.Range(0, enemy.attacks.Count);
                 //Attack an especific hero
                 HeroStateMachine heroState = target.GetComponent<HeroStateMachine>();
                 if (heroState != null)
                 {
-                    float calc_damage = enemy.currentATK + Random.Range(0, 5); // Add randomness to the damage
+                    float calc_damage = enemy.currentATK + Random.Range(0, 5) + enemy.attacks[choosenAttack].attackDamage;// Add randomness to the damage
                     heroState.TakeDamage(calc_damage);
                 }
             }
@@ -230,10 +248,11 @@ public class EnemyStateMachine : MonoBehaviour
         this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255);
         gameObject.GetComponent<Animator>().enabled = false;
 
+        Debug.Log("Dead Enemy");
         BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
         alive = false;
     }
-
+    
     public void TakeDamage(float getDamageAmount)
     {
         enemy.currentHP -= getDamageAmount;
@@ -251,6 +270,7 @@ public class EnemyStateMachine : MonoBehaviour
             BSM.battleStates = BattleStateMachine.PerformAction.WAIT;
             cur_coolddown = 0f;
             currentState = TurnState.PROCESSING;
+            BSM.heroTurn = true;
         }
         else
         {

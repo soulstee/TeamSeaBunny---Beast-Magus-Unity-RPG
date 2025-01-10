@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4deb5c7861929084ca648fbfdd7e0326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackName: Slash
+  attackName: Arrow
   attackDescription: Perform a basic attack against an enemy. Deals standard damage.
   attackDamage: 10
   attackManaCost: 0
