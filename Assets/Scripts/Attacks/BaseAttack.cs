@@ -9,4 +9,5 @@ public class BaseAttack : MonoBehaviour
     public string attackDescription;
     public float attackDamage;// How much damanage a hero is dealing
     public float attackManaCost;// If a hero is casting a spell, calculate how much mana to spend
+    public bool magic = false;
 }

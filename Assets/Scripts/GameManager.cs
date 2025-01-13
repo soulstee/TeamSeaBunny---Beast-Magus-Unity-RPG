@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public int currentRegions;
     public List<RegionData> Regions = new List<RegionData>();
 
+    public List<GameObject> CurrentHeroes = new List<GameObject>();
+
     // SPAWNPOINTS
     [Header("Spawn Point Settings")]
     public string nextSpawnPoint;
@@ -241,9 +243,4 @@ public class GameManager : MonoBehaviour
         gotAttacked = false;
         canGetEncounter = false;
     }
-
-    /*public void loadCabin()
-    {
-        SceneManager.LoadScene(sceneCabin);
-    }*/
 }

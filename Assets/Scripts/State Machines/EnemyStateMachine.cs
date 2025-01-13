@@ -1,7 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+
+using Random = UnityEngine.Random;
 
 public class EnemyStateMachine : MonoBehaviour
 {
@@ -43,6 +47,9 @@ public class EnemyStateMachine : MonoBehaviour
     //Special Attack
     public bool special = false;
 
+    public GameObject damageText;
+    public Transform textSpawn;
+
     void Start()
     {
         Selector.SetActive(false);
@@ -55,13 +62,8 @@ public class EnemyStateMachine : MonoBehaviour
 
     void Update()
     {
+        //Health Bar
         slider.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.baseHP / enemy.baseHP, enemy.currentHP / enemy.baseHP), slider.transform.localScale.y, slider.transform.localScale.z);
-
-        /*if (enemy.currentHP <= 0)
-        {
-            enemy.currentHP = 0;
-            currentState = TurnState.DEAD;
-        }*/
 
         switch (currentState)
         {
@@ -71,7 +73,7 @@ public class EnemyStateMachine : MonoBehaviour
                 break;
 
             case TurnState.CHOOSEACTION:
-                //StartCoroutine(wait());
+                //StartCoroutine(wait(ChooseAction, 1f));
                 //Selector.SetActive(true);
                 if (enemy.currentHP > 0)
                 {
@@ -97,15 +99,6 @@ public class EnemyStateMachine : MonoBehaviour
         }
     }
 
-    private void UpdateProgressBar()
-    {
-        cur_coolddown += Time.deltaTime;
-        if (cur_coolddown >= max_cooldown)
-        {
-            //currentState = TurnState.CHOOSEACTION;
-        }
-    }
-
     private void ChooseAction()
     {
         Selector.SetActive(true);
@@ -121,7 +114,7 @@ public class EnemyStateMachine : MonoBehaviour
         {
             Attacker = enemy.characterName,
             Type = "Enemy",
-            AttackersGameObject = this.gameObject,        
+            AttackersGameObject = this.gameObject,
             AttackersTarget = target, // Set hero target 
             chosenAttack = enemy.attacks[Random.Range(0, enemy.attacks.Count)] // Random attack
         };
@@ -175,7 +168,7 @@ public class EnemyStateMachine : MonoBehaviour
         }
 
         Selector.SetActive(false);
-
+        BSM.waitOnceEnemy = true;
         // Reset state
         ResetAfterAction();
     }
@@ -209,7 +202,14 @@ public class EnemyStateMachine : MonoBehaviour
                 HeroStateMachine heroState = target.GetComponent<HeroStateMachine>();
                 if (heroState != null)
                 {
-                    float calc_damage = enemy.currentATK + Random.Range(0, 5) + enemy.attacks[choosenAttack].attackDamage;// Add randomness to the damage
+                    float calc_damage = 0f;
+                    if (enemy.attacks[choosenAttack].magic)
+                        calc_damage = enemy.currentATK + Random.Range(0, 5) + enemy.attacks[choosenAttack].attackDamage - heroState.hero.magicDEF;// Add randomness to the damage
+                    else
+                        calc_damage = enemy.currentATK + Random.Range(0, 5) + enemy.attacks[choosenAttack].attackDamage - heroState.hero.currentDEF;
+
+                    if (calc_damage < 0f)
+                        calc_damage = 0f;
                     heroState.TakeDamage(calc_damage);
                 }
             }
@@ -229,7 +229,9 @@ public class EnemyStateMachine : MonoBehaviour
 
         this.gameObject.tag = "DeadEnemy";
         BSM.EnemiesInBattle.Remove(this.gameObject);
+        slider.transform.parent.gameObject.SetActive(false);
         Selector.SetActive(false);
+        animator.SetTrigger("Death");
 
         if (BSM.EnemiesInBattle.Count > 0)
         {
@@ -244,17 +246,21 @@ public class EnemyStateMachine : MonoBehaviour
                 }    
             }
         }
-
-        this.gameObject.GetComponent<SpriteRenderer>().material.color = new Color32(105, 105, 105, 255);
-        gameObject.GetComponent<Animator>().enabled = false;
-
-        Debug.Log("Dead Enemy");
         BSM.battleStates = BattleStateMachine.PerformAction.CHECKALIVE;
         alive = false;
     }
     
     public void TakeDamage(float getDamageAmount)
     {
+        bool once = true;
+        if (once)
+        {
+            GameObject text = Instantiate(damageText, textSpawn.position, Quaternion.identity) as GameObject;
+            text.GetComponent<TMP_Text>().text = $"{getDamageAmount}";
+            once = false;
+        }
+
+        animator.SetTrigger("Hurt");
         enemy.currentHP -= getDamageAmount;
         if (enemy.currentHP <= 0)
         {

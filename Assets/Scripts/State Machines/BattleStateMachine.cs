@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,25 +61,31 @@ public class BattleStateMachine : MonoBehaviour
     private GameObject secondHeroToSwitch = null;
 
     //Spawn Points
-    public List<Transform> spawnPoints = new List<Transform>();
+    public List<Transform> EnemySpawnPoints = new List<Transform>();
+    public List<Transform> HeroesSpawnPoints = new List<Transform>();
 
     //Keep count of whic enemys turn is
-    bool magicUse = false;
     public int enemyInPlayCount = 0;
     float holdManaCost = 0;
     public bool heroTurn = true;
     public GameObject winCanva;
     public GameObject defeatCanva;
 
+    public bool waitOnceEnemy = true;
+
     void Awake()
     {
         // Initializeenemies
         for (int i = 0; i < GameManager.instance.enemyAmount; i++)
         {
-            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], spawnPoints[i].position, Quaternion.identity) as GameObject;
+            GameObject NewEnemy = Instantiate(GameManager.instance.enemiesToBattle[i], EnemySpawnPoints[i].position, Quaternion.identity) as GameObject;
             NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName + "_" + (i+1);
             NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName = NewEnemy.name;
             EnemiesInBattle.Add(NewEnemy);
+        }
+        for (int i = 0; i < GameManager.instance.CurrentHeroes.Count; i++)
+        {
+            GameObject NewHero = Instantiate(GameManager.instance.CurrentHeroes[i], HeroesSpawnPoints[i].position, Quaternion.identity) as GameObject;
         }
     }
 
@@ -95,9 +102,6 @@ public class BattleStateMachine : MonoBehaviour
         EnemySelectPanel.SetActive(false);
         MagicPanel.SetActive(false);
         SwitchPositionsPanel.SetActive(false);
-
-        //Create enemy buttons
-        //CreateEnemyButtons();
     }
 
     void Update()
@@ -115,6 +119,7 @@ public class BattleStateMachine : MonoBehaviour
                 break;
 
             case PerformAction.ENEMYTURN:
+                //StartCoroutine(wait(enemyTurn, 1f));
                 enemyTurn();
                 break;
 
@@ -171,6 +176,14 @@ public class BattleStateMachine : MonoBehaviour
     {
         battleStates = PerformAction.CHECKALIVE;
     }
+    public void ToEnemy()
+    {
+        battleStates = PerformAction.ENEMYTURN;
+    }
+    public void ToActive()
+    {
+        HeroInput = HEROGUI.ACTIVATE;
+    }
     // Perform the next action
     void PerformActionStep()
     {
@@ -187,7 +200,7 @@ public class BattleStateMachine : MonoBehaviour
             HSM.EnemyToAttack = PerformList[0].AttackersTarget;
             HSM.currentState = HeroStateMachine.TurnState.ACTION;
             //Reduce mana of current Hero
-            if (magicUse)
+            if(HeroChoice.chosenAttack.magic)
                 HSM.hero.currentMP -= holdManaCost;
         }
 
@@ -238,7 +251,6 @@ public class BattleStateMachine : MonoBehaviour
         CreateButton(actionSpacer, "Attack", () => PopulateAttackPanel());
 
         // Magic button
-        //CreateButton(actionSpacer, "Magic", () => Input3());
         CreateButton(actionSpacer, "Magic", () => PopulateMagicPanel());
 
         // Switch Positions button
@@ -249,8 +261,6 @@ public class BattleStateMachine : MonoBehaviour
     void PopulateAttackPanel()
     {
         ClearButtons(actionSpacer);
-
-        magicUse = false;
 
         GameObject activeHero = HeroesToManage[0];
         HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
@@ -275,8 +285,6 @@ public class BattleStateMachine : MonoBehaviour
         AttackPanel.SetActive(false);
         MagicPanel.SetActive(true);
         ClearButtons(magicSpacer);
-
-        magicUse = true;
 
         GameObject activeHero = HeroesToManage[0];
         HeroStateMachine heroState = activeHero.GetComponent<HeroStateMachine>();
@@ -303,8 +311,6 @@ public class BattleStateMachine : MonoBehaviour
 
         foreach (GameObject enemy in EnemiesInBattle)
         {
-            //GameObject newButton = Instantiate(enemyButton);
-            //EnemySelectButton button = newButton.GetComponent<EnemySelectButton>();
             EnemyStateMachine curEnemy = enemy.GetComponent<EnemyStateMachine>();
 
             if (curEnemy.currentState != EnemyStateMachine.TurnState.DEAD)
@@ -415,7 +421,6 @@ public class BattleStateMachine : MonoBehaviour
     // Physical Attack
     public void Input1(BaseAttack chosenAttack)
     {
-        magicUse = false; ////////////////////////////////////
         HeroChoice = new HandleTurn
         {
             Attacker = HeroesToManage[0].name,
@@ -472,33 +477,15 @@ public class BattleStateMachine : MonoBehaviour
         HeroesToManage.RemoveAt(0);
         heroTurn = false;
         HeroInput = HEROGUI.ACTIVATE;
-
-        //battleStates = PerformAction.CHECKALIVE;
     }
 
     // Check if heroes or enemies are still alive
     void CheckAliveStatus()
     {
-        //Count how many enemys are dead
-        /*int enemyDeadCount = 0;
-        foreach (GameObject enemy in EnemiesInBattle)
-        {
-            EnemyStateMachine curEnemy = enemy.GetComponent<EnemyStateMachine>();
-
-            if (curEnemy.currentState == EnemyStateMachine.TurnState.DEAD)
-            {
-                enemyDeadCount++;
-            }
-        }*/
-
         if (HeroesInGame.Count < 1)
         {
             battleStates = PerformAction.LOSE;
         }
-        /*else if (enemyDeadCount == EnemiesInBattle.Count)
-        {
-            battleStates = PerformAction.WIN;
-        }*/
         else if(EnemiesInBattle.Count < 1)
             battleStates = PerformAction.WIN;
         else
@@ -509,7 +496,11 @@ public class BattleStateMachine : MonoBehaviour
             }
             else
             {
-                battleStates = PerformAction.ENEMYTURN; //Enemy Turn
+                if(waitOnceEnemy)
+                {
+                    StartCoroutine(wait(ToEnemy, 1f));
+                    waitOnceEnemy = false;
+                }
             }
             
         }
@@ -540,7 +531,12 @@ public class BattleStateMachine : MonoBehaviour
             GameManager.instance.gameState = GameManager.GameStates.WORLD_STATE;
             GameManager.instance.enemiesToBattle.Clear();
             GameManager.instance.LoadSceneAfterBattle();
-        }
-           
+        }     
+    }
+
+    private IEnumerator wait(Action callback, float time)
+    {
+        yield return new WaitForSeconds(time);
+        callback?.Invoke();
     }
 }
