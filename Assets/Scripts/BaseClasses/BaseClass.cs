@@ -16,6 +16,7 @@ public class BaseClass
     public float currentATK;
     public float baseDEF;
     public float currentDEF;
+    public float magicDEF;
 
     public List<BaseAttack> attacks = new List<BaseAttack>();
 }

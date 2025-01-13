@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HeroStateMachine : MonoBehaviour
 {
@@ -27,7 +28,7 @@ public class HeroStateMachine : MonoBehaviour
     public GameObject Selector;
     public GameObject EnemyToAttack;
     private bool actionStarted = false;
-    private Vector3 startPosition;
+    public Vector3 startPosition;
     public float animSpeed;
     int count = 0; //Count the amount of times it runs
 
@@ -41,6 +42,9 @@ public class HeroStateMachine : MonoBehaviour
     private HeroPanelStats stats;
     public GameObject HeroPanel;
     private Transform HeroPanelSpacer;
+
+    public GameObject damageText;
+    public Transform textSpawn;
 
     void Start()
     {
@@ -63,7 +67,6 @@ public class HeroStateMachine : MonoBehaviour
         switch (currentState)
         {
             case TurnState.PROCESSING:
-                //UpgradeProgressBar();
                 currentState = TurnState.ADDTOLIST;
                 break;
 
@@ -87,19 +90,10 @@ public class HeroStateMachine : MonoBehaviour
 
     void UpgradeProgressBar()
     {
-        //////////////////////////////////////////
         stats.HeroHP.text = "HP: " + hero.currentHP;
         stats.HeroMP.text = "MP: " + hero.currentMP;
-        ////////////////////////////////////////////
-        
-        cur_coolddown += Time.deltaTime;
-        float calc_cooldown = cur_coolddown / max_cooldown;
-        ProgressBar.transform.localScale = new Vector3(Mathf.Clamp(calc_cooldown, hero.baseHP / hero.baseHP, hero.currentHP / hero.baseHP), ProgressBar.transform.localScale.y, ProgressBar.transform.localScale.z);
 
-        /*if (cur_coolddown >= max_cooldown)
-        {
-            currentState = TurnState.ADDTOLIST;
-        }*/
+        ProgressBar.transform.localScale = new Vector3(Mathf.Clamp(1f, hero.baseHP / hero.baseHP, hero.currentHP / hero.baseHP), ProgressBar.transform.localScale.y, ProgressBar.transform.localScale.z);
     }
 
     private IEnumerator TimeForAction()
@@ -137,6 +131,7 @@ public class HeroStateMachine : MonoBehaviour
         // Reset state
         ResetAfterAction();
         actionStarted = false;
+        BSM.ToCheck();
     }
 
     private bool MoveTowardsTarget(Vector3 target)
@@ -148,7 +143,14 @@ public class HeroStateMachine : MonoBehaviour
     {
         if (EnemyToAttack != null)
         {
-            float calc_damage = hero.currentATK + (BSM.PerformList.Count > 0 ? BSM.PerformList[0].chosenAttack.attackDamage : 0);
+            float calc_damage = 0f;
+            if (BSM.HeroChoice.chosenAttack.magic)
+                calc_damage = hero.currentATK + BSM.HeroChoice.chosenAttack.attackDamage - EnemyToAttack.GetComponent<EnemyStateMachine>().enemy.magicDEF;
+            else
+                calc_damage = hero.currentATK + BSM.HeroChoice.chosenAttack.attackDamage - EnemyToAttack.GetComponent<EnemyStateMachine>().enemy.currentDEF;
+
+            if (calc_damage < 0f)
+                calc_damage = 0f;
             EnemyToAttack.GetComponent<EnemyStateMachine>().TakeDamage(calc_damage);
         }
         else
@@ -194,14 +196,21 @@ public class HeroStateMachine : MonoBehaviour
 
     public void TakeDamage(float getDamageAmount)
     {
+        bool once = true;
+        if(once)
+        {
+            GameObject text = Instantiate(damageText, textSpawn.position, Quaternion.identity) as GameObject;
+            text.GetComponent<TMP_Text>().text = $"{getDamageAmount}";
+            once = false;
+        }
+        
+        animator.SetTrigger("Hurt");
         hero.currentHP -= getDamageAmount;
         if (hero.currentHP <= 0)
         {
             hero.currentHP = 0;
             currentState = TurnState.DEAD;
         }
-
-        //UpdateHeroPanel();
     }
 
     private void ResetAfterAction()
@@ -209,13 +218,13 @@ public class HeroStateMachine : MonoBehaviour
         if (BSM.battleStates != BattleStateMachine.PerformAction.WIN && BSM.battleStates != BattleStateMachine.PerformAction.LOSE)
         {
             BSM.battleStates = BattleStateMachine.PerformAction.WAIT;
-            cur_coolddown = 0f;
             currentState = TurnState.PROCESSING;
         }
         else
         {
             currentState = TurnState.WAITING;
         }
+        
     }
 
     private void CreateHeroPanel()
@@ -229,10 +238,4 @@ public class HeroStateMachine : MonoBehaviour
         ProgressBar = stats.ProgressBar;
         HeroPanel.transform.SetParent(HeroPanelSpacer, false);
     }
-
-    /*private void UpdateHeroPanel()
-    {
-        stats.HeroHP.text = "HP: " + hero.currentHP;
-        stats.HeroMP.text = "MP: " + hero.currentMP;
-    }*/
 }

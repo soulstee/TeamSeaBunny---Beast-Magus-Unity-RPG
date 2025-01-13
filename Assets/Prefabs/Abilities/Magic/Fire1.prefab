@@ -49,3 +49,4 @@ MonoBehaviour:
     standard damage.
   attackDamage: 10
   attackManaCost: 10
+  magic: 1

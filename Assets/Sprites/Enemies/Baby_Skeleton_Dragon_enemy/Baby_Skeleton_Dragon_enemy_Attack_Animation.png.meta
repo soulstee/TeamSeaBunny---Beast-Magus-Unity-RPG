@@ -1,0 +1,479 @@
+fileFormatVersion: 2
+guid: e219acfed1f27c44fa69bb55c1693ad9
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a892dc3436b9cb242a939cccd4e57242
+      internalID: -1102058930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_1
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 15425a2574f63884d800970f452eea3e
+      internalID: -606868281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_2
+      rect:
+        serializedVersion: 2
+        x: 880
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f644651432c70d3418200a1754a9e4ee
+      internalID: -1737358264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_3
+      rect:
+        serializedVersion: 2
+        x: 1320
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6ef0b2a2c1d5e074cac97e10629169d8
+      internalID: -398161336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_4
+      rect:
+        serializedVersion: 2
+        x: 1760
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8290bc934981b7c4eb9d290d6b265da0
+      internalID: -170506596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_5
+      rect:
+        serializedVersion: 2
+        x: 2200
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 87087098fcdcd224dbf0b31cbf77d82a
+      internalID: 1882013989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_6
+      rect:
+        serializedVersion: 2
+        x: 2640
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61c82aa725aae3445927d8d1ae24d7d6
+      internalID: -2057157921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_7
+      rect:
+        serializedVersion: 2
+        x: 3080
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b9ef3545551c6e4d81a75d0b616cee9
+      internalID: -783401961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_8
+      rect:
+        serializedVersion: 2
+        x: 3520
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3bf0b980191000445872d2b713d6ecfc
+      internalID: -757685506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_9
+      rect:
+        serializedVersion: 2
+        x: 3960
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8097aa50a9ef90d48b6d1106f43a7220
+      internalID: 1849430021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_10
+      rect:
+        serializedVersion: 2
+        x: 4400
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5e44a1b503d05545abf377072bbf800
+      internalID: 1576715281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_11
+      rect:
+        serializedVersion: 2
+        x: 4840
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 309dbadb0f50c2b4e8aadb0ed373b62e
+      internalID: 951923612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_12
+      rect:
+        serializedVersion: 2
+        x: 5280
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b0a0916b804c4a4cbd94adcbb1e0a3c
+      internalID: 1297963127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_13
+      rect:
+        serializedVersion: 2
+        x: 5720
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 05578393c17112f4e91672a4120d03fd
+      internalID: -469289925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_14
+      rect:
+        serializedVersion: 2
+        x: 6160
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e6256e38dd11e34c95ba897dda17c19
+      internalID: 1660419564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Baby_Skeleton_Dragon_enemy_Attack_Animation_15
+      rect:
+        serializedVersion: 2
+        x: 6600
+        y: 0
+        width: 440
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 31567450c5365694bb06df11b2ba2c55
+      internalID: -930360017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_0: -1102058930
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_1: -606868281
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_10: 1576715281
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_11: 951923612
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_12: 1297963127
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_13: -469289925
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_14: 1660419564
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_15: -930360017
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_2: -1737358264
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_3: -398161336
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_4: -170506596
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_5: 1882013989
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_6: -2057157921
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_7: -783401961
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_8: -757685506
+      Baby_Skeleton_Dragon_enemy_Attack_Animation_9: 1849430021
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -48,3 +48,4 @@ MonoBehaviour:
   attackDescription: A basic poison spell that deals damage over time.
   attackDamage: 5
   attackManaCost: 5
+  magic: 1

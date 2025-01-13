@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public int currentRegions;
     public List<RegionData> Regions = new List<RegionData>();
 
+    public List<GameObject> CurrentHeroes = new List<GameObject>();
+
     // SPAWNPOINTS
     [Header("Spawn Point Settings")]
     public string nextSpawnPoint;
@@ -36,6 +38,7 @@ public class GameManager : MonoBehaviour
 
     // SCENES
     [Header("Scene Settings")]
+    public string sceneCabin;
     public string sceneToLoad;            // The name of the next scene to load
     public string lastScene;              // The last scene name (e.g., for battle return)
 
@@ -56,11 +59,11 @@ public class GameManager : MonoBehaviour
     }
 
     // ENCOUNTER VARIABLES
-    private float encounterCooldown = 0f; // Time until next possible encounter
+    public float encounterCooldown = 0f; // Time until next possible encounter
     private float encounterInterval = 1.0f; // Minimum seconds between checks
     private Vector2 lastPosition;         // Hero's last position
-    private float distanceWalked = 0f;    // Total distance walked
-    private float encounterDistance = 5f; // Distance required to trigger check
+    public float distanceWalked = 0f;    // Total distance walked
+    public float encounterDistance = 5f; // Distance required to trigger check
 
     public int enemyAmount;
     public List<GameObject> enemiesToBattle = new List<GameObject>();
@@ -102,6 +105,8 @@ public class GameManager : MonoBehaviour
         {
             encounterCooldown -= Time.deltaTime;
         }
+
+        lastHeroPosition = Vector2.zero;
 
         switch (gameState)
         {
@@ -197,6 +202,7 @@ public class GameManager : MonoBehaviour
 
         if (distanceWalked >= encounterDistance)
         {
+            //gotAttacked = true;
             RandomEncounter();
             distanceWalked = 0f; // Reset distance counter after check
         }
