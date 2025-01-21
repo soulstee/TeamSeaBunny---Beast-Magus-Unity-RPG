@@ -224,6 +224,7 @@ public class GameManager : MonoBehaviour
 
     void StartBattle()
     {
+        //Destroy(currentHero);
         lastHeroPosition = GameObject.Find("OverworldPlayer").transform.position;
         nextHeroPosition = lastHeroPosition;
         lastScene = SceneManager.GetActiveScene().name;

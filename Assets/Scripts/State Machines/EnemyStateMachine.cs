@@ -12,9 +12,7 @@ public class EnemyStateMachine : MonoBehaviour
     private BattleStateMachine BSM;
     public BaseEnemy enemy;
 
-    public GameObject slider;
-
-    public GameObject Selector;
+    //public GameObject Selector;
     public GameObject target; //Hold the target of the next attack
 
     public enum TurnState
@@ -50,6 +48,16 @@ public class EnemyStateMachine : MonoBehaviour
     public GameObject damageText;
     public Transform textSpawn;
 
+    //Hero UI
+    [Header("Enemy UI")]
+    public GameObject faceFrame;
+    public GameObject Selector;
+    public bool active = false;
+    public Transform healthBar;
+    public Transform manaBar;
+    public Transform specialBar;
+    private GameObject NewFace;
+
     void Start()
     {
         Selector.SetActive(false);
@@ -63,7 +71,7 @@ public class EnemyStateMachine : MonoBehaviour
     void Update()
     {
         //Health Bar
-        slider.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.baseHP / enemy.baseHP, enemy.currentHP / enemy.baseHP), slider.transform.localScale.y, slider.transform.localScale.z);
+        UpgradeProgressBar();
 
         switch (currentState)
         {
@@ -99,6 +107,21 @@ public class EnemyStateMachine : MonoBehaviour
         }
     }
 
+    void UpgradeProgressBar()
+    {
+        healthBar.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.baseHP / enemy.baseHP, enemy.currentHP / enemy.baseHP), 1, 1);
+        manaBar.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.baseMP / enemy.baseMP, enemy.currentMP / enemy.baseMP), 1, 1);
+        specialBar.transform.localScale = new Vector3(Mathf.Clamp(1f, enemy.maxSP / enemy.maxSP, enemy.currentSP / enemy.maxSP), 1, 1);
+    }
+    public void setEnemyUI(Vector3 facePosition, GameObject Select, Transform health, Transform mana, Transform special)
+    {
+        NewFace = Instantiate(faceFrame, facePosition, Quaternion.identity) as GameObject;
+        Selector = Select;
+        healthBar = health;
+        manaBar = mana;
+        specialBar = special;
+    }
+
     private void ChooseAction()
     {
         Selector.SetActive(true);
@@ -121,6 +144,7 @@ public class EnemyStateMachine : MonoBehaviour
 
         Debug.Log($"{enemy.characterName} prepares to attack with {enemyAttack.chosenAttack.attackName} at {enemyAttack.AttackersTarget}");
         BSM.PerformList.Add(enemyAttack); // Add to PerformList
+        BSM.attackDescrption.text = $"{enemy.characterName} attack with {enemyAttack.chosenAttack.attackName} at {enemyAttack.AttackersTarget.name}";
         Selector.SetActive(false);
     }
 
@@ -228,8 +252,8 @@ public class EnemyStateMachine : MonoBehaviour
         }
 
         this.gameObject.tag = "DeadEnemy";
+        Destroy(NewFace);
         BSM.EnemiesInBattle.Remove(this.gameObject);
-        slider.transform.parent.gameObject.SetActive(false);
         Selector.SetActive(false);
         animator.SetTrigger("Death");
 
@@ -268,7 +292,7 @@ public class EnemyStateMachine : MonoBehaviour
             currentState = TurnState.DEAD;
         }
     }
-
+    
     private void ResetAfterAction()
     {
         if (BSM.battleStates != BattleStateMachine.PerformAction.WIN && BSM.battleStates != BattleStateMachine.PerformAction.LOSE)

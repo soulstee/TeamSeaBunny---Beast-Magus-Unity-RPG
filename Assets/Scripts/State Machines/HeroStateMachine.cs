@@ -25,7 +25,7 @@ public class HeroStateMachine : MonoBehaviour
     public float cur_coolddown = 0f;
     public float max_cooldown = 5f;
     public Image ProgressBar;
-    public GameObject Selector;
+    //public GameObject Selector;
     public GameObject EnemyToAttack;
     private bool actionStarted = false;
     public Vector3 startPosition;
@@ -46,13 +46,21 @@ public class HeroStateMachine : MonoBehaviour
     public GameObject damageText;
     public Transform textSpawn;
 
+    //Hero UI
+    [Header("Hero UI")]
+    public GameObject faceFrame;
+    public GameObject Selector;
+    public bool active = false;
+    public Transform healthBar;
+    public Transform manaBar;
+    public Transform specialBar;
+
     void Start()
     {
-        HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer");
-        CreateHeroPanel();
-
+        //HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer");
+        //CreateHeroPanel();
+        
         startPosition = transform.position;
-        //cur_coolddown = Random.Range(0, 2.5f);
         Selector.SetActive(false);
         BSM = GameObject.Find("BattleManager").GetComponent<BattleStateMachine>();
         currentState = TurnState.PROCESSING;
@@ -63,6 +71,11 @@ public class HeroStateMachine : MonoBehaviour
     void Update()
     {
         UpgradeProgressBar();
+
+        if(active)
+            Selector.SetActive(true);      
+        else
+            Selector.SetActive(false);
 
         switch (currentState)
         {
@@ -90,12 +103,20 @@ public class HeroStateMachine : MonoBehaviour
 
     void UpgradeProgressBar()
     {
-        stats.HeroHP.text = "HP: " + hero.currentHP;
-        stats.HeroMP.text = "MP: " + hero.currentMP;
-
-        ProgressBar.transform.localScale = new Vector3(Mathf.Clamp(1f, hero.baseHP / hero.baseHP, hero.currentHP / hero.baseHP), ProgressBar.transform.localScale.y, ProgressBar.transform.localScale.z);
+        healthBar.transform.localScale = new Vector3(Mathf.Clamp(1f, hero.baseHP / hero.baseHP, hero.currentHP / hero.baseHP), 1, 1);
+        manaBar.transform.localScale = new Vector3(Mathf.Clamp(1f, hero.baseMP / hero.baseMP, hero.currentMP / hero.baseMP), 1, 1);
+        specialBar.transform.localScale = new Vector3(Mathf.Clamp(1f, hero.maxSP / hero.maxSP, hero.currentSP / hero.maxSP), 1, 1);
     }
-
+    public void setHeroUI(Vector3 facePosition, GameObject Select, Transform health, Transform mana, Transform special)
+    {    
+        GameObject NewFace = Instantiate(faceFrame, facePosition, Quaternion.identity) as GameObject;
+        //Debug.Log(Select.name);
+        Selector = Select;
+        //Debug.Log(Selector.name);
+        healthBar = health;
+        manaBar = mana;
+        specialBar = special;
+    }
     private IEnumerator TimeForAction()
     {
         if (actionStarted)
@@ -107,7 +128,7 @@ public class HeroStateMachine : MonoBehaviour
 
         // Trigger attack animation
         animator.SetTrigger("Attack");
-        animator.SetTrigger("Magic");
+        //animator.SetTrigger("Magic");
 
         // Move slightly forward
         Vector3 forwardPosition = new Vector3(startPosition.x + 0.5f, startPosition.y, startPosition.z);

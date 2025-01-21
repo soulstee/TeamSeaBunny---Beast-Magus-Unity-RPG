@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
 
 public class BattleStateMachine : MonoBehaviour
 {
@@ -38,6 +40,7 @@ public class BattleStateMachine : MonoBehaviour
     public List<GameObject> HeroesToManage = new List<GameObject>();
 
     // UI panels
+    [Header("System UI")]
     public GameObject AttackPanel;
     public GameObject EnemySelectPanel;
     public GameObject MagicPanel;
@@ -66,12 +69,29 @@ public class BattleStateMachine : MonoBehaviour
 
     //Keep count of whic enemys turn is
     public int enemyInPlayCount = 0;
+    public int heroInPlayCount = 0;
     float holdManaCost = 0;
+    public TMP_Text attackDescrption;
     public bool heroTurn = true;
     public GameObject winCanva;
     public GameObject defeatCanva;
-
     public bool waitOnceEnemy = true;
+
+    //Hero UI SetUp
+    [Header("Hero UI")]
+    public List<Vector3> HeroFacePositions = new List<Vector3>();
+    public List<GameObject> HeroActive = new List<GameObject>();
+    public List<Transform> HeroHealth = new List<Transform>();
+    public List<Transform> HeroMana = new List<Transform>();
+    public List<Transform> HeroSpecial = new List<Transform>();
+
+    //Enemy UI SetUp
+    [Header("Enemys UI")]
+    public List<Vector3> EnemyFacePositions = new List<Vector3>();
+    public List<GameObject> EnemyActive = new List<GameObject>();
+    public List<Transform> EnemyHealth = new List<Transform>();
+    public List<Transform> EnemyMana = new List<Transform>();
+    public List<Transform> EnemySpecial = new List<Transform>();
 
     void Awake()
     {
@@ -82,10 +102,12 @@ public class BattleStateMachine : MonoBehaviour
             NewEnemy.name = NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName + "_" + (i+1);
             NewEnemy.GetComponent<EnemyStateMachine>().enemy.characterName = NewEnemy.name;
             EnemiesInBattle.Add(NewEnemy);
+            NewEnemy.GetComponent<EnemyStateMachine>().setEnemyUI(EnemyFacePositions[i], EnemyActive[i], EnemyHealth[i], EnemyMana[i], EnemySpecial[i]);
         }
         for (int i = 0; i < GameManager.instance.CurrentHeroes.Count; i++)
         {
             GameObject NewHero = Instantiate(GameManager.instance.CurrentHeroes[i], HeroesSpawnPoints[i].position, Quaternion.identity) as GameObject;
+            NewHero.GetComponent<HeroStateMachine>().setHeroUI(HeroFacePositions[i], HeroActive[i], HeroHealth[i], HeroMana[i], HeroSpecial[i]);
         }
     }
 
@@ -148,12 +170,15 @@ public class BattleStateMachine : MonoBehaviour
                 {
                     if (HeroesToManage.Count > 0)
                     {
-                        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(true);
+                        //HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(true);
+                        HeroStateMachine hero = HeroesToManage[0].GetComponent<HeroStateMachine>();
+                        hero.active = true;
                         HeroChoice = new HandleTurn();
                         AttackPanel.SetActive(true);
                         PopulateActionPanel();
                         HeroInput = HEROGUI.WAITING;
-                    }
+                        //heroTurnAction();
+                    }  
                 }
                 break;
 
@@ -171,7 +196,7 @@ public class BattleStateMachine : MonoBehaviour
                 break;
         }
     }
-
+    
     public void ToCheck()
     {
         battleStates = PerformAction.CHECKALIVE;
@@ -207,7 +232,33 @@ public class BattleStateMachine : MonoBehaviour
         PerformList.RemoveAt(0);
         battleStates = PerformAction.PERFORMACTION;     
     }
-    
+    //Hero Turn
+    void heroTurnAction()
+    {
+        HeroStateMachine hero = null;// HeroesToManage[0].GetComponent<HeroStateMachine>();
+
+        if (heroInPlayCount >= HeroesToManage.Count)
+            heroInPlayCount = 0;
+
+        GameObject heroInPlay = HeroesToManage[heroInPlayCount];
+        heroInPlayCount++;
+
+        if (heroInPlayCount >= HeroesToManage.Count)
+            heroInPlayCount = 0;
+         
+        hero = heroInPlay.GetComponent<HeroStateMachine>();
+        if (hero.currentState == HeroStateMachine.TurnState.DEAD)
+        {
+            heroInPlayCount++;
+            heroTurnAction();
+        }
+
+        hero.active = true;
+        HeroChoice = new HandleTurn();
+        AttackPanel.SetActive(true);
+        PopulateActionPanel();
+        HeroInput = HEROGUI.WAITING;
+    }
     // Enemys Turn
     void enemyTurn()
     {
@@ -248,13 +299,13 @@ public class BattleStateMachine : MonoBehaviour
         attackButtons.Clear();
 
         // Attack button
-        CreateButton(actionSpacer, "Attack", () => PopulateAttackPanel());
+        CreateButton(actionSpacer, "Attack", () => PopulateAttackPanel(), "Select a Physical Attack");
 
         // Magic button
-        CreateButton(actionSpacer, "Magic", () => PopulateMagicPanel());
+        CreateButton(actionSpacer, "Magic", () => PopulateMagicPanel(), "Select a Magic Attack");
 
         // Switch Positions button
-        CreateButton(actionSpacer, "Switch Positions", () => PopulateSwitchPositionsPanel());
+        CreateButton(actionSpacer, "Switch Positions", () => PopulateSwitchPositionsPanel(), "Select another hero to Switch Positions");
     }
 
     //Populate Attack Panel with hero's attack
@@ -269,14 +320,14 @@ public class BattleStateMachine : MonoBehaviour
         {
             foreach (BaseAttack atk in heroState.hero.attacks)
             {
-                CreateButton(actionSpacer, atk.attackName, () => Input1(atk));
+                CreateButton(actionSpacer, atk.attackName, () => Input1(atk), atk.attackDescription);
             }
         }
         else
         {
             Debug.LogWarning("No attacks available for this hero.");
         }
-        CreateButton(actionSpacer, "Back", () => PopulateActionPanel());
+        CreateButton(actionSpacer, "Back", () => PopulateActionPanel(), "Previous Menu");
     }
 
     // Populate Magic Panel with hero's spells
@@ -293,14 +344,14 @@ public class BattleStateMachine : MonoBehaviour
         {
             foreach (BaseAttack spell in heroState.hero.MagicAttacks)
             {
-                CreateButton(magicSpacer, spell.attackName, () => Input4(spell));
+                CreateButton(magicSpacer, spell.attackName, () => Input4(spell), spell.attackDescription);
             }
         }
         else
         {
             Debug.LogWarning("No magic spells available for this hero.");
         }
-        CreateButton(magicSpacer, "Back", () => PopulateActionPanel());
+        CreateButton(magicSpacer, "Back", () => PopulateActionPanel(), "Previous Menu");
     }
 
     // Create enemy selection buttons
@@ -330,9 +381,31 @@ public class BattleStateMachine : MonoBehaviour
 
                 newButton.transform.SetParent(Spacer, false);
                 enemyButtons.Add(newButton);
+
+                //Display Description on Hover
+                EventTrigger evntTri = newButton.AddComponent<EventTrigger>();
+                EventTrigger.Entry hoverEvent = new EventTrigger.Entry()
+                {
+                    eventID = EventTriggerType.PointerEnter
+                };
+                hoverEvent.callback.AddListener((functionIWant) => { display($"Attack {curEnemy.enemy.characterName}"); });
+                evntTri.triggers.Add(hoverEvent);
+
+                EventTrigger.Entry hoverExit = new EventTrigger.Entry()
+                {
+                    eventID = EventTriggerType.PointerExit
+                };
+                hoverExit.callback.AddListener(notDisplay);
+                evntTri.triggers.Add(hoverExit);
+                EventTrigger.Entry clickExit = new EventTrigger.Entry()
+                {
+                    eventID = EventTriggerType.PointerClick
+                };
+                clickExit.callback.AddListener(notDisplay);
+                evntTri.triggers.Add(clickExit);
             }           
         }
-        CreateButton(Spacer, "Back", () => PopulateActionPanel());
+        CreateButton(Spacer, "Back", () => PopulateActionPanel(), "Prevoius Menu");
     }
 
     // Populate Switch Positions Panel
@@ -351,12 +424,12 @@ public class BattleStateMachine : MonoBehaviour
             {
                 HeroStateMachine heroState = hero.GetComponent<HeroStateMachine>();
 
-                CreateButton(switchPositionsSpacer, heroState.hero.characterName, () => SelectHeroForSwitch(hero));
+                CreateButton(switchPositionsSpacer, heroState.hero.characterName, () => SelectHeroForSwitch(hero), $"Swtich positions with {heroState.hero.characterName}");
             }   
         }
 
         SwitchPositionsPanel.SetActive(true);
-        CreateButton(switchPositionsSpacer, "Back", () => PopulateActionPanel());
+        CreateButton(switchPositionsSpacer, "Back", () => PopulateActionPanel(), "Previous Menu");
     }
 
     // Select heroes to switch positions
@@ -375,13 +448,44 @@ public class BattleStateMachine : MonoBehaviour
     }
 
     // Generic method to create buttons
-    void CreateButton(Transform parent, string buttonText, UnityEngine.Events.UnityAction onClick)
+    void CreateButton(Transform parent, string buttonText, UnityEngine.Events.UnityAction onClick, string text)
     {
         GameObject newButton = Instantiate(actionButton);
         newButton.GetComponentInChildren<Text>().text = buttonText;
         newButton.GetComponent<Button>().onClick.AddListener(onClick);
         newButton.transform.SetParent(parent, false);
+
+        //Display Description on Hover
+        EventTrigger evntTri = newButton.AddComponent<EventTrigger>();
+        EventTrigger.Entry hoverEvent = new EventTrigger.Entry()
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
+        hoverEvent.callback.AddListener((functionIWant) => { display(text); });
+        evntTri.triggers.Add(hoverEvent);
+
+        EventTrigger.Entry hoverExit = new EventTrigger.Entry()
+        {
+            eventID = EventTriggerType.PointerExit
+        };
+        hoverExit.callback.AddListener(notDisplay);
+        evntTri.triggers.Add(hoverExit);
+        EventTrigger.Entry clickExit = new EventTrigger.Entry()
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+        clickExit.callback.AddListener(notDisplay);
+        evntTri.triggers.Add(clickExit);
     }
+    private void display(string text)
+    {
+        attackDescrption.text = text;
+    }
+    private void notDisplay(BaseEventData eventData)
+    {
+        attackDescrption.text = "";
+    }
+
     // Clear buttons from a spacer
     void ClearButtons(Transform spacer)
     {
@@ -473,7 +577,9 @@ public class BattleStateMachine : MonoBehaviour
         PerformList.Add(HeroChoice);
         EnemySelectPanel.SetActive(false);
         ClearButtons(actionSpacer);
-        HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false);
+        //HeroesToManage[0].transform.Find("Selector").gameObject.SetActive(false);
+        HeroStateMachine hero = HeroesToManage[0].GetComponent<HeroStateMachine>();
+        hero.active = false;
         HeroesToManage.RemoveAt(0);
         heroTurn = false;
         HeroInput = HEROGUI.ACTIVATE;

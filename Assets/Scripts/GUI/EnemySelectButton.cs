@@ -13,11 +13,11 @@ public class EnemySelectButton : MonoBehaviour
 
     public void HideSelector()
     {
-        EnemyPrefab.transform.Find("Selector").gameObject.SetActive(false);
+        //EnemyPrefab.transform.Find("Selector").gameObject.SetActive(false);
     }
 
     public void ShowSelector()
     {
-        EnemyPrefab.transform.Find("Selector").gameObject.SetActive(true);
+        //EnemyPrefab.transform.Find("Selector").gameObject.SetActive(true);
     }
 }

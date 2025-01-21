@@ -12,6 +12,9 @@ public class BaseClass
     public float baseMP;
     public float currentMP;
 
+    public float maxSP;
+    public float currentSP;
+
     public float baseATK;
     public float currentATK;
     public float baseDEF;

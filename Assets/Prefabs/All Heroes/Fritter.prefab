@@ -60,7 +60,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.11, y: -0.56, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 1.458502, y: 1.458502, z: 1.458502}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 9203435623219218456}
@@ -137,6 +137,8 @@ MonoBehaviour:
     currentHP: 70
     baseMP: 70
     currentMP: 70
+    maxSP: 100
+    currentSP: 0
     baseATK: 3
     currentATK: 12
     baseDEF: 5
@@ -154,13 +156,18 @@ MonoBehaviour:
   cur_coolddown: 0
   max_cooldown: 0.1
   ProgressBar: {fileID: 1806088946804935155, guid: 4c595c5fcd4b11443ba723e00d5aacac, type: 3}
-  Selector: {fileID: 5571193519539313837}
   EnemyToAttack: {fileID: 0}
   startPosition: {x: 0, y: 0, z: 0}
   animSpeed: 30
   HeroPanel: {fileID: 7512720514578916638, guid: 4c595c5fcd4b11443ba723e00d5aacac, type: 3}
   damageText: {fileID: 7318901903812294924, guid: 163422b51c377d742a3162969e147151, type: 3}
   textSpawn: {fileID: 8467842040063725787}
+  faceFrame: {fileID: 139561027392634928, guid: 47cc6fe8192960d4c9c61e4d43c9585c, type: 3}
+  Selector: {fileID: 0}
+  active: 0
+  healthBar: {fileID: 0}
+  manaBar: {fileID: 0}
+  specialBar: {fileID: 0}
 --- !u!95 &2670062767769924197
 Animator:
   serializedVersion: 5
@@ -252,18 +259,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7730776603016904790, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
---- !u!1 &5571193519539313837 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7730776603016904790, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
-  m_PrefabInstance: {fileID: 2745479029164350715}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &9203435623219218456 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6458387602763961571, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}

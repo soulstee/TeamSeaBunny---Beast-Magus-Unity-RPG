@@ -60,7 +60,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -6.15, y: 2.48, z: 0}
-  m_LocalScale: {x: 1.450931, y: 1.450931, z: 1.450931}
+  m_LocalScale: {x: 0.90371495, y: 0.90371495, z: 0.90371495}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5789167550261863611}
@@ -135,8 +135,10 @@ MonoBehaviour:
     characterName: Gareth
     baseHP: 100
     currentHP: 100
-    baseMP: 0
+    baseMP: 100
     currentMP: 0
+    maxSP: 100
+    currentSP: 0
     baseATK: 10
     currentATK: 10
     baseDEF: 5
@@ -153,13 +155,18 @@ MonoBehaviour:
   cur_coolddown: 0
   max_cooldown: 0.1
   ProgressBar: {fileID: 1806088946804935155, guid: 4c595c5fcd4b11443ba723e00d5aacac, type: 3}
-  Selector: {fileID: 7115318130404143118}
   EnemyToAttack: {fileID: 0}
   startPosition: {x: 0, y: 0, z: 0}
   animSpeed: 30
   HeroPanel: {fileID: 7512720514578916638, guid: 4c595c5fcd4b11443ba723e00d5aacac, type: 3}
   damageText: {fileID: 7318901903812294924, guid: 163422b51c377d742a3162969e147151, type: 3}
   textSpawn: {fileID: 6646080002465353020}
+  faceFrame: {fileID: 5187039227374854439, guid: ff89bb683cb16bb419738bbd45376111, type: 3}
+  Selector: {fileID: 0}
+  active: 0
+  healthBar: {fileID: 0}
+  manaBar: {fileID: 0}
+  specialBar: {fileID: 0}
 --- !u!95 &4392019020847877662
 Animator:
   serializedVersion: 5
@@ -189,6 +196,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8067084824293040268}
     m_Modifications:
+    - target: {fileID: 2774555962069777540, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2774555962069777540, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
       propertyPath: m_SortingOrder
       value: 10
@@ -255,7 +266,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7730776603016904790, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -265,10 +276,5 @@ PrefabInstance:
 --- !u!4 &5789167550261863611 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6458387602763961571, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
-  m_PrefabInstance: {fileID: 718197114594390104}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &7115318130404143118 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7730776603016904790, guid: 0a1f206ecb827c944b221df74a1efb9e, type: 3}
   m_PrefabInstance: {fileID: 718197114594390104}
   m_PrefabAsset: {fileID: 0}
