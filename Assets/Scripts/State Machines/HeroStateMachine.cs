@@ -55,6 +55,13 @@ public class HeroStateMachine : MonoBehaviour
     public Transform manaBar;
     public Transform specialBar;
 
+    //Sound FX for Hero Characters
+    [Header("Hero Sound FX")]
+    public AudioClip attackSound;
+    public AudioClip hurtSound;
+    public AudioClip deathSound;
+    private AudioSource audioSource;
+
     void Start()
     {
         //HeroPanelSpacer = GameObject.Find("BattleCanvas").transform.Find("HeroPanel").transform.Find("HeroPanelSpacer");
@@ -66,6 +73,13 @@ public class HeroStateMachine : MonoBehaviour
         currentState = TurnState.PROCESSING;
 
         animator = GetComponent<Animator>();
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogWarning($"AudioSource missing on {gameObject.name}. Adding one.");
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -129,6 +143,9 @@ public class HeroStateMachine : MonoBehaviour
         // Trigger attack animation
         animator.SetTrigger("Attack");
         //animator.SetTrigger("Magic");
+
+        // Play attack sound
+        PlaySound(attackSound);
 
         // Move slightly forward
         Vector3 forwardPosition = new Vector3(startPosition.x + 0.5f, startPosition.y, startPosition.z);
@@ -225,12 +242,14 @@ public class HeroStateMachine : MonoBehaviour
             once = false;
         }
         
+        PlaySound(hurtSound);
         animator.SetTrigger("Hurt");
         hero.currentHP -= getDamageAmount;
         if (hero.currentHP <= 0)
         {
             hero.currentHP = 0;
             currentState = TurnState.DEAD;
+            PlaySound(deathSound);
         }
     }
 
@@ -258,5 +277,13 @@ public class HeroStateMachine : MonoBehaviour
 
         ProgressBar = stats.ProgressBar;
         HeroPanel.transform.SetParent(HeroPanelSpacer, false);
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        if (audioSource != null && clip != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 }
