@@ -25,6 +25,7 @@ public class HeroStateMachine : MonoBehaviour
     public float cur_coolddown = 0f;
     public float max_cooldown = 5f;
     public Image ProgressBar;
+    
     //public GameObject Selector;
     public GameObject EnemyToAttack;
     private bool actionStarted = false;
@@ -34,6 +35,7 @@ public class HeroStateMachine : MonoBehaviour
 
     // Animation
     private Animator animator;
+    public Animator fritterAnimation;
 
     // Dead
     private bool alive = true;
@@ -140,13 +142,24 @@ public class HeroStateMachine : MonoBehaviour
 
         actionStarted = true;
 
-        // Trigger attack animation
-        animator.SetTrigger("Attack");
-        //animator.SetTrigger("Magic");
+        //Check if hero is casting magic
+        if (BSM.HeroChoice.chosenAttack.magic)
+        {
+            // Play the magic animation
+            fritterAnimation.SetTrigger("CastSpell");
 
-        // Play attack sound
-        PlaySound(attackSound);
+            // Optional: Add a delay to let the animation
+            yield return new WaitForSeconds(1.0f);
+        }
+        else
+        {
+            // Trigger attack animation
+            animator.SetTrigger("Attack");
+            //animator.SetTrigger("Magic");
 
+            // Play attack sound
+            PlaySound(attackSound);
+        }
         // Move slightly forward
         Vector3 forwardPosition = new Vector3(startPosition.x + 0.5f, startPosition.y, startPosition.z);
         while (MoveTowardsTarget(forwardPosition))
@@ -195,6 +208,12 @@ public class HeroStateMachine : MonoBehaviour
         {
             Debug.LogWarning("EnemyToAttack is null. Skipping damage.");
         }
+    }
+
+    public void OnMagicSelected()
+    {
+        // Trigger the animation for when a spell is casted
+        fritterAnimation.SetTrigger("CastSpell");
     }
 
     private void HandleDeath()
