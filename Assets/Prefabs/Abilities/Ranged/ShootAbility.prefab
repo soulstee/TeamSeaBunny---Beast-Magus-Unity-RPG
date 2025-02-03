@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &60918289484436763
+--- !u!1 &7587161550976189921
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3771747739846362738}
-  - component: {fileID: 3752038209742557899}
+  - component: {fileID: 6858946428625229568}
+  - component: {fileID: 8270727211329505824}
   m_Layer: 0
-  m_Name: SlashAbility
+  m_Name: ShootAbility
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3771747739846362738
+--- !u!4 &6858946428625229568
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60918289484436763}
+  m_GameObject: {fileID: 7587161550976189921}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,20 +32,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3752038209742557899
+--- !u!114 &8270727211329505824
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60918289484436763}
+  m_GameObject: {fileID: 7587161550976189921}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4deb5c7861929084ca648fbfdd7e0326, type: 3}
+  m_Script: {fileID: 11500000, guid: 97beebae46a5d4d4392468f888fd10bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackName: Shoot
-  attackDescription: Perform a basic attack against an enemy. Deals standard damage.
+  attackDescription: Shoot at an enemy with your ranged weapon. Deals standard damage.
   attackDamage: 10
   attackManaCost: 0
   magic: 0

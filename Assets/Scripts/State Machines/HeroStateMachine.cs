@@ -60,6 +60,7 @@ public class HeroStateMachine : MonoBehaviour
     //Sound FX for Hero Characters
     [Header("Hero Sound FX")]
     public AudioClip attackSound;
+    public AudioClip magicSound;
     public AudioClip hurtSound;
     public AudioClip deathSound;
     private AudioSource audioSource;
@@ -145,11 +146,15 @@ public class HeroStateMachine : MonoBehaviour
         //Check if hero is casting magic
         if (BSM.HeroChoice.chosenAttack.magic)
         {
-            // Play the magic animation
+            // Play the magic animations for hero characters
             fritterAnimation.SetTrigger("CastSpell");
 
             // Optional: Add a delay to let the animation
             yield return new WaitForSeconds(1.0f);
+
+            // Play sound for when casting spells
+            PlaySound(magicSound);
+
         }
         else
         {

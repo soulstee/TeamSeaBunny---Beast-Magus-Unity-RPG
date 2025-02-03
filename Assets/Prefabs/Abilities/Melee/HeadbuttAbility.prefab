@@ -47,6 +47,6 @@ MonoBehaviour:
   attackName: Headbutt
   attackDescription: Attack your enemeies with your horn directly at them. Deals
     minimal damage.
-  attackDamage: 10
+  attackDamage: 5
   attackManaCost: 0
   magic: 0

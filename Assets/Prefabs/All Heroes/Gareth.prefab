@@ -146,7 +146,7 @@ MonoBehaviour:
     currentDEF: 10
     magicDEF: 0
     attacks:
-    - {fileID: 3752038209742557899, guid: c81dc3a20f768a64dafa1c6c0181ce17, type: 3}
+    - {fileID: 8270727211329505824, guid: 0bb800704332b6a43afafa85bc637619, type: 3}
     stamina: 30
     intelligence: 20
     dexterity: 30
@@ -159,6 +159,7 @@ MonoBehaviour:
   EnemyToAttack: {fileID: 0}
   startPosition: {x: 0, y: 0, z: 0}
   animSpeed: 30
+  fritterAnimation: {fileID: 0}
   HeroPanel: {fileID: 7512720514578916638, guid: 4c595c5fcd4b11443ba723e00d5aacac, type: 3}
   damageText: {fileID: 7318901903812294924, guid: 163422b51c377d742a3162969e147151, type: 3}
   textSpawn: {fileID: 6646080002465353020}
