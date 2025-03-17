@@ -310,4 +310,18 @@ public class HeroStateMachine : MonoBehaviour
             audioSource.PlayOneShot(clip);
         }
     }
+
+    public void SaveGame()
+    {
+        HeroStateMachine[] heroes = FindObjectsOfType<HeroStateMachine>();
+        Transform player = GameObject.FindGameObjectWithTag("Player").transform;
+        SaveSystem.SaveGame(heroes, player);
+    }
+
+    public void LoadGame()
+    {
+        HeroStateMachine[] heroes = FindObjectsOfType<HeroStateMachine>();
+        Transform player = GameObject.FindGameObjectWithTag("Player").transform;
+        SaveSystem.LoadGame(heroes, player);
+    }
 }

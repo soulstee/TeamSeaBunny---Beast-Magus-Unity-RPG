@@ -45,6 +45,14 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogWarning("No spawn point or last position set. Character may spawn at (0,0).");
         }
+
+        if (PlayerPrefs.HasKey("PlayerX"))
+        {
+            float x = PlayerPrefs.GetFloat("PlayerX");
+            float y = PlayerPrefs.GetFloat("PlayerY");
+            float z = PlayerPrefs.GetFloat("PlayerZ");
+            transform.position = new Vector3(x, y, z);
+        }
     }
 
 
